@@ -1,10 +1,31 @@
 import React from "react";
-import { Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
+import Landing from "./pages/Landing";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
+import BankDetails from "./pages/BankDetails";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import ReimburseForm from "./pages/Reimburse/ReimburseForm";
+import DonationForm from "./pages/Donation/DonationForm";
+import GstForm from "./pages/Gst/GstForm";
 
 const App = () => {
   return (
     <div>
-      <Routes></Routes>
+      <Routes>
+        <Route path="/landing" element={<Landing />} />
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/bank-details" element={<BankDetails />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/reimburse" element={<ReimburseForm />} />
+        <Route path="/sponsor/donation-form" element={<DonationForm />} />
+        <Route path="/sponsor/gst-form" element={<GstForm />} />
+      </Routes>
     </div>
   );
 };
