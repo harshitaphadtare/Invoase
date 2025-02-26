@@ -10,13 +10,15 @@ import Contact from "./pages/Contact";
 import ReimburseForm from "./pages/Reimburse/ReimburseForm";
 import DonationForm from "./pages/Donation/DonationForm";
 import GstForm from "./pages/Gst/GstForm";
+import Navbar from "./components/Navbar";
 
 const App = () => {
   return (
     <div>
+      <Navbar />
       <Routes>
-        <Route path="/landing" element={<Landing />} />
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/bank-details" element={<BankDetails />} />
