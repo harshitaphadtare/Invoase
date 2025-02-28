@@ -1,8 +1,10 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
+import StudentSignUp from "./pages/Signup/StudentSignUp";
+import StudentBankDetails from "./pages/Signup/StudentBankDetails";
+import AccountantSignUp from "./pages/Signup/AccountantSignUp";
 import Profile from "./pages/Profile";
 import BankDetails from "./pages/BankDetails";
 import About from "./pages/About";
@@ -13,13 +15,18 @@ import GstForm from "./pages/Gst/GstForm";
 import Navbar from "./components/Navbar";
 
 const App = () => {
+  const location = useLocation();
   return (
     <div>
-      <Navbar />
+      {location.pathname !== "/student/signup" &&
+        location.pathname !== "/accountant/signup" &&
+        location.pathname !== "/student/bank-details" && <Navbar />}
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/student/signup" element={<StudentSignUp />} />
+        <Route path="/student/bank-details" element={<StudentBankDetails />} />
+        <Route path="/accountant/signup" element={<AccountantSignUp />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/bank-details" element={<BankDetails />} />
         <Route path="/about" element={<About />} />
