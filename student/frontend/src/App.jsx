@@ -15,7 +15,7 @@ import Navbar from "./components/Navbar";
 const App = () => {
   return (
     <div>
-      {location.pathname !== "/" && <Navbar />}
+      <Navbar />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/dashboard" element={<Dashboard />} />
