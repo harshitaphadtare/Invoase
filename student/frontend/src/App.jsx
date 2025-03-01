@@ -13,6 +13,7 @@ import ReimburseForm from "./pages/Reimburse/ReimburseForm";
 import DonationForm from "./pages/Donation/DonationForm";
 import GstForm from "./pages/Gst/GstForm";
 import Navbar from "./components/Navbar";
+import SuccessMsg from "./components/SuccessMsg";
 
 const App = () => {
   const location = useLocation();
@@ -20,6 +21,7 @@ const App = () => {
     <div>
       {location.pathname !== "/student/signup" &&
         location.pathname !== "/accountant/signup" &&
+        location.pathname !== "/student/signup/success" &&
         location.pathname !== "/student/bank-details" && <Navbar />}
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -34,6 +36,7 @@ const App = () => {
         <Route path="/reimburse" element={<ReimburseForm />} />
         <Route path="/sponsor/donation-form" element={<DonationForm />} />
         <Route path="/sponsor/gst-form" element={<GstForm />} />
+        <Route path="/student/signup/success" element={<SuccessMsg />} />
       </Routes>
     </div>
   );

@@ -56,7 +56,7 @@ export default function SignupForm() {
         </div>
 
         {/* Title */}
-        <h2 className="mt-2 text-center text-2xl font-semibold text-white">
+        <h2 className="mt-1 text-center text-2xl font-semibold text-white">
           {isLogin ? "Login to your account" : "Create a new Account"}
         </h2>
         {!isLogin && (
@@ -171,10 +171,11 @@ export default function SignupForm() {
           )}
 
           <button
-            onClick={() => {
+            onClick={(e) => {
               if (isLogin) {
                 navigate("/dashboard");
               } else {
+                e.preventDefault();
                 navigate("/student/bank-details");
               }
             }}
