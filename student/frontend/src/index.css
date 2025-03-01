@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+.active hr{
+    @apply block
+}
+
+.active #nav-item {
+    color: #2C3E50;
+    font-weight:bold;
+}

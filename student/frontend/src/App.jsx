@@ -14,6 +14,7 @@ import DonationForm from "./pages/Donation/DonationForm";
 import GstForm from "./pages/Gst/GstForm";
 import Navbar from "./components/Navbar";
 import SuccessMsg from "./components/SuccessMsg";
+import Request from "./pages/Request";
 
 const App = () => {
   const location = useLocation();
@@ -21,6 +22,7 @@ const App = () => {
     <div>
       {location.pathname !== "/student/signup" &&
         location.pathname !== "/accountant/signup" &&
+        location.pathname !== "/" &&
         location.pathname !== "/student/signup/success" &&
         location.pathname !== "/student/bank-details" && <Navbar />}
       <Routes>
@@ -30,6 +32,7 @@ const App = () => {
         <Route path="/student/bank-details" element={<StudentBankDetails />} />
         <Route path="/accountant/signup" element={<AccountantSignUp />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/requests" element={<Request />} />
         <Route path="/bank-details" element={<BankDetails />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />

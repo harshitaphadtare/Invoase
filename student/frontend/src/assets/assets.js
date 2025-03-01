@@ -7,6 +7,7 @@ import cross_button from './cross_button.png';
 import clock from './clock.png';
 import success_tick from './success_tick.png';
 import support from './support.png';
+import profile from './profile.png';
 
 
 export const assets = {
@@ -19,5 +20,5 @@ export const assets = {
     clock,
     success_tick,
     support,
-    
+    profile,
 } 
