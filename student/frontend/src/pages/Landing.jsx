@@ -6,12 +6,12 @@ const Landing = () => {
     <div className="mx-5 md:mx-12">
       <div className="mt-5 flex lg:px-10 rounded-lg pb-5 px-2 bg-[#EAF3FA]">
         {/*left content*/}
-        <div className="flex flex-col">
+        <div className="flex flex-col px-5 py-6">
           <div className="mt-2 lg:mt-15 lg:px-5 text-center md:text-center lg:text-left">
             {/*badge*/}
             <div className="flex items-center justify-center lg:justify-start">
-              <div className="bg-stone-50 shadow-sm rounded-sm h-auto w-[150px] py-[1.75px] text-[10px] px-[2px]  ">
-                <span className="bg-black font-bold text-white text-[8px] rounded-sm py-[1.5px] px-1 shadow-sm mr-[1px] ">
+              <div className="bg-stone-50 flex justify-between shadow-sm rounded-sm h-auto w-[150px] py-[1.75px] text-[10px] pl-1 pr-[8px]  ">
+                <span className="bg-black font-bold text-white text-[8px] rounded-sm py-[1.5px] px-1 shadow-sm ">
                   NEW
                 </span>{" "}
                 Revolutionizing Finance
@@ -19,7 +19,7 @@ const Landing = () => {
             </div>
 
             {/*title*/}
-            <h1 className="mt-1 text-4xl lg:text-5xl font-semibold text-[#2c3e50] ">
+            <h1 className="mt-1 text-3xl lg:text-5xl font-semibold text-[#2c3e50] ">
               Automate & Simplify Financial Approvals
             </h1>
 
