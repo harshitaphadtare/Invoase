@@ -94,7 +94,7 @@ export default function SignupForm() {
               </div>
               <div className="relative w-2/4">
                 <FaCalendarAlt className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
-                <select className="w-full h-9 text-xs pl-8 rounded-lg border border-[#9CA3AF] bg-[#374859] p-2 text-[#9CA3AF] transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none">
+                <select className="w-full cursor-pointer h-9 text-xs pl-8 rounded-lg border border-[#9CA3AF] bg-[#374859] p-2 text-[#9CA3AF] transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none">
                   <option>Select tenure</option>
                   <option>1 Year</option>
                   <option>2 Years</option>
@@ -150,7 +150,11 @@ export default function SignupForm() {
               onClick={() => setPasswordVisible(!passwordVisible)}
               className="absolute right-3 top-3 text-[#9CA3AF] hover:text-white"
             >
-              {passwordVisible ? <FaEyeSlash className="w-[8px]" /> : <FaEye />}
+              {passwordVisible ? (
+                <FaEyeSlash className="w-[10px] text-[#9CA3AF] cursor-pointer" />
+              ) : (
+                <FaEye className="w-[10px] text-[#9CA3AF] cursor-pointer" />
+              )}
             </button>
           </div>
 

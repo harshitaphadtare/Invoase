@@ -1,11 +1,13 @@
 import React from "react";
 import { FaUserEdit, FaUniversity, FaArrowLeft } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const SidePanel = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   return (
-    <div className="h-screen w-64 bg-[#FCFCFC] shadow-md p-4">
+    <div className="h-full w-64 bg-[#FCFCFC] shadow-md p-4">
       <nav className="flex flex-col gap-4">
         {/* Back Button */}
         <button
@@ -18,17 +20,31 @@ const SidePanel = () => {
         </button>
 
         {/* Edit Profile */}
-        <button className="group flex items-center text-sm gap-3 p-3 text-gray-800 hover:bg-gray-300 rounded-lg cursor-pointer transition-all">
-          <FaUserEdit className="w-4 h-4 text-gray-700 transition-all duration-300 group-hover:scale-110" />
-          <span className="text-[#2C3E50] transition-all duration-200 group-hover:font-medium">
+        <button
+          onClick={() => navigate("/profile")}
+          className={`group flex items-center text-sm gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+            location.pathname === "/profile"
+              ? "bg-gray-300 font-medium"
+              : "text-gray-800 hover:bg-gray-300"
+          }`}
+        >
+          <FaUserEdit className="w-4 h-4 text-gray-700 duration-300" />
+          <span className="text-[#2C3E50] transition-all duration-200">
             Edit Profile
           </span>
         </button>
 
         {/* Edit Bank Details */}
-        <button className="group flex items-center text-sm gap-3 p-3 text-gray-800 hover:bg-gray-300 rounded-lg cursor-pointer transition-all">
-          <FaUniversity className="w-4 h-4 text-gray-700 transition-all duration-300 group-hover:scale-110" />
-          <span className="text-[#2C3E50] transition-all duration-200 group-hover:font-medium">
+        <button
+          onClick={() => navigate("/bank-details")}
+          className={`group flex items-center text-sm gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+            location.pathname === "/bank-details"
+              ? "bg-gray-300 font-medium"
+              : "text-gray-800 hover:bg-gray-300"
+          }`}
+        >
+          <FaUniversity className="w-4 h-4 text-gray-700 duration-300" />
+          <span className="text-[#2C3E50] transition-all duration-200">
             Edit Bank Details
           </span>
         </button>

@@ -119,7 +119,11 @@ const AccountantSignUp = () => {
               onClick={() => setPasswordVisible(!passwordVisible)}
               className="absolute right-3 top-3 text-[#9CA3AF] hover:text-white"
             >
-              {passwordVisible ? <FaEyeSlash className="w-[8px]" /> : <FaEye />}
+              {passwordVisible ? (
+                <FaEyeSlash className="w-[10px] text-[#9CA3AF] cursor-pointer" />
+              ) : (
+                <FaEye className="w-[10px] text-[#9CA3AF] cursor-pointer" />
+              )}
             </button>
           </div>
 

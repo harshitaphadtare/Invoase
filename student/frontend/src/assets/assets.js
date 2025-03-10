@@ -8,6 +8,9 @@ import clock from './clock.png';
 import success_tick from './success_tick.png';
 import support from './support.png';
 import profile from './profile.png';
+import success_sound from './success.mp3';
+import person from './person.jpg'
+
 
 
 export const assets = {
@@ -21,4 +24,6 @@ export const assets = {
     success_tick,
     support,
     profile,
+    success_sound,
+    person,
 } 

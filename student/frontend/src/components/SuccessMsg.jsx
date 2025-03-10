@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaHome, FaPhoneAlt } from "react-icons/fa";
 import { assets } from "../assets/assets";
 
 const SuccessMsg = () => {
   const navigate = useNavigate();
+  useEffect(() => {
+    const successSound = new Audio(`${assets.success_sound}`); // Adjust the path if needed
+    successSound
+      .play()
+      .catch((error) => console.log("Audio play failed", error));
+  }, []);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -46,12 +52,12 @@ const SuccessMsg = () => {
         <div className="flex mt-6 space-x-2 px-2">
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 bg-[#2C3E50] text-xs md:text-sm text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-800 transition"
+            className="flex cursor-pointer items-center gap-2 bg-[#2C3E50] text-xs md:text-sm text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-800 transition"
           >
             <FaHome className="w-[11px] h-[11px] md:w-[14px] md:h-[14px]" />{" "}
             Return to Home
           </button>
-          <button className="flex items-center gap-2 border text-xs md:text-sm border-gray-400 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-100 transition">
+          <button className="flex cursor-pointer items-center gap-2 border text-xs md:text-sm border-gray-400 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-100 transition">
             <img
               className="w-[11px] h-[11px] md:w-[14px] md:h-[14px]"
               src={assets.support}
