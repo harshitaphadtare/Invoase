@@ -183,7 +183,10 @@ const GstForm = () => {
           </div>
         </div>
         <div className="flex justify-center mb-6">
-          <button className="bg-gray-700 items-center hover:cursor-pointer hover:bg-gray-800 text-white text-sm px-5 py-2 rounded shadow ">
+          <button
+            onClick={() => navigate("/sponsor/gst-form/view")}
+            className="bg-gray-700 items-center hover:cursor-pointer hover:bg-gray-800 text-white text-sm px-5 py-2 rounded shadow "
+          >
             &#128196; Generate Document
           </button>
         </div>

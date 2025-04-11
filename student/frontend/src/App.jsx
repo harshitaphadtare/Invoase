@@ -45,6 +45,14 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/reimburse" element={<ReimburseForm />} />
+          <Route
+            path="/sponsor/donation-form/success"
+            element={<DonationSuccess />}
+          />
+          <Route
+            path="/sponsor/gst-form/success"
+            element={<DonationSuccess />}
+          />
           <Route path="/sponsor/donation-form" element={<DonationForm />} />
           <Route
             path="/sponsor/donation-form/view"

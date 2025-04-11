@@ -171,7 +171,7 @@ const SponsorForm = () => {
         <div className="flex justify-center mb-6">
           <button
             onClick={() => navigate("/sponsor/donation-form/view")}
-            className="bg-gray-700 items-center hover:cursor-pointer hover:bg-gray-800 text-white text-sm px-6 py-3 rounded shadow "
+            className="bg-gray-700 items-center hover:cursor-pointer hover:bg-gray-800 text-white text-sm px-5 py-2 rounded shadow "
           >
             &#128196; Generate Document
           </button>

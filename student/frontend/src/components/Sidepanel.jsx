@@ -45,7 +45,7 @@ const SidePanel = () => {
           {/* Back Button */}
           <button
             onClick={() => {
-              navigate(-1);
+              navigate("/dashboard");
               setIsOpen(false);
             }}
             className="flex items-center border-2 border-gray-600 rounded-full h-5 w-5 justify-center text-gray-700 hover:text-black hover:border-gray-800 cursor-pointer transition-all"

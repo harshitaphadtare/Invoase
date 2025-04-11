@@ -20,54 +20,57 @@ const DonationView = () => {
   }, []);
 
   return (
-    <div className="bg-[#F6F6F6]">
-      <div className="pt-10 p-6 max-w-3xl mx-auto min-h-screen">
-        {/* Header */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h1 className="text-2xl font-semibold mb-1">
-            Donation Document Review
-          </h1>
-          <p className="text-sm text-gray-500 mb-4 border-b border-gray-200 pb-4">
-            Date: January 15, 2024 at 10:30 AM
-          </p>
+    <div className="bg-[#F6F6F6] min-h-[100px] flex items-center justify-center">
+      <div className="pt-6 p-4 max-w-2xl mx-auto">
+        <div className="bg-white p-5 rounded-lg shadow">
+          <div className="flex justify-between items-center mb-5">
+            <h1 className="text-xl font-semibold">Donation Document Review</h1>
+            <p className="text-xs text-gray-500 ">
+              Date: January 15, 2024 at 10:30 AM
+            </p>
+          </div>
 
           {/* Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-500 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-500 mb-4">
             <div>
               <p className="font-medium">Type of Payment-Donation</p>
-              <p className="text-gray-900 pt-1">Donation</p>
+              <p className="text-gray-900 pt-1 font-medium">Donation</p>
             </div>
             <div>
               <p className="font-medium">Company Name</p>
-              <p className="text-gray-900 pt-1">Tech Solutions Inc.</p>
+              <p className="text-gray-900 pt-1 font-medium">
+                Tech Solutions Inc.
+              </p>
             </div>
             <div>
               <p className="font-medium">Contact Number</p>
-              <p className="text-gray-900 pt-1">+1 (555) 123-4567</p>
+              <p className="text-gray-900 pt-1 font-medium">
+                +1 (555) 123-4567
+              </p>
             </div>
             <div>
               <p className="font-medium">PAN Card</p>
-              <p className="text-gray-900 pt-1">ABCDE1234F</p>
+              <p className="text-gray-900 pt-1 font-medium">ABCDE1234F</p>
             </div>
             <div>
               <p className="font-medium">Bank Name</p>
-              <p className="text-gray-900 pt-1">Global Bank Ltd.</p>
+              <p className="text-gray-900 pt-1 font-medium">Global Bank Ltd.</p>
             </div>
           </div>
 
           {/* Document Box */}
           <div>
-            <p className="text-sm font-medium mb-2 text-gray-500">
+            <p className="text-xs font-medium mb-1 text-gray-500">
               Relevant Document
             </p>
-            <div className="border border-dashed border-gray-300 p-6 rounded-lg flex items-center justify-center flex-col bg-gray-100">
-              <FiFileText className="text-gray-500 w-10 h-10" />
-              <p className="text-gray-600 text-sm pt-2">
+            <div className="border border-dashed border-gray-300 p-4 rounded-lg flex items-center justify-center flex-col bg-gray-100">
+              <FiFileText className="text-gray-500 w-8 h-8" />
+              <p className="text-gray-600 text-xs pt-1">
                 donation_document.pdf
               </p>
               <button
                 onClick={handleViewDocument}
-                className="mt-2 text-sm text-blue-800 hover:underline hover:cursor-pointer"
+                className="mt-1 text-xs text-blue-800 hover:underline hover:cursor-pointer"
               >
                 View Document
               </button>
@@ -75,41 +78,41 @@ const DonationView = () => {
           </div>
 
           {/* Approvals */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6  border-b border-gray-200 pb-4">
-            <div className="flex items-center gap-2 p-4 bg-green-100 border border-green-300 rounded">
-              <FiCheckCircle className="text-green-600 w-5 h-5" />
-              <span className="text-sm font-medium text-green-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 border-b border-gray-200 pb-3">
+            <div className="flex items-center gap-2 p-3 bg-green-100 border border-green-300 rounded">
+              <FiCheckCircle className="text-green-600 w-4 h-4" />
+              <span className="text-xs font-medium text-green-700">
                 Finance Head Approval
               </span>
             </div>
-            <div className="flex items-center gap-2 p-4 bg-gray-100 border border-gray-300 rounded">
-              <FiClock className="text-gray-600 w-5 h-5" />
-              <span className="text-sm font-medium text-gray-700">
+            <div className="flex items-center gap-2 p-3 bg-gray-100 border border-gray-300 rounded">
+              <FiClock className="text-gray-600 w-4 h-4" />
+              <span className="text-xs font-medium text-gray-700">
                 Accountant Approval
               </span>
-              <span className="text-xs text-gray-500 ml-2">
+              <span className="text-[10px] text-gray-500 ml-2">
                 (Pending approval)
               </span>
             </div>
           </div>
 
           {/* Footer Buttons */}
-          <div className="flex justify-between mt-8">
+          <div className="flex justify-between mt-4">
             <button
               onClick={() => {
                 navigate("/sponsor/donation-form");
               }}
-              className="flex items-center gap-2 text-sm px-4 py-2 border border-gray-300 rounded hover:cursor-pointer"
+              className="flex items-center gap-2 text-xs px-3 py-1 border border-gray-300 rounded hover:cursor-pointer"
             >
-              <FiArrowLeft className="w-4 h-4" />
+              <FiArrowLeft className="w-3 h-3" />
               Back to Form
             </button>
             <button
               onClick={() => navigate("/sponsor/donation-form/success")}
-              className="flex items-center gap-2 text-sm px-4 py-2 bg-[#2C3E50] text-white rounded hover:cursor-pointer hover:bg-gray-800"
+              className="flex items-center gap-2 text-xs px-3 py-1 bg-[#2C3E50] text-white rounded hover:cursor-pointer hover:bg-gray-800"
             >
               Send Document
-              <FiSend className="w-4 h-4" />
+              <FiSend className="w-3 h-3" />
             </button>
           </div>
         </div>
