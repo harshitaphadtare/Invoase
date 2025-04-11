@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { assets, initialNotifications, documents } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
-import { FiEye, FiEdit } from "react-icons/fi";
+import { FiEye, FiEdit, FiArrowUp } from "react-icons/fi";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState(initialNotifications);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const [filter, setFilter] = useState("all");
 
@@ -43,6 +44,25 @@ const Dashboard = () => {
       icon: assets.warn,
     },
   ];
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    const handleScroll = () => {
+      if (window.scrollY > window.innerHeight * 0.5) {
+        setShowScrollButton(true);
+      } else {
+        setShowScrollButton(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   //notification section
 
@@ -393,6 +413,16 @@ const Dashboard = () => {
           Load More
         </button>
       </div>
+
+      {/* Scroll to Top Button */}
+      {showScrollButton && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 bg-[#1F2B38] text-white p-3 rounded-full shadow-lg hover:bg-gray-700 hover:cursor-pointer transition"
+        >
+          <FiArrowUp className="w-5 h-5" />
+        </button>
+      )}
     </div>
   );
 };

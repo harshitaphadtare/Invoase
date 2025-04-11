@@ -16,6 +16,9 @@ import pending from './pending.png';
 import rupee from './rupee.png';
 import warn from './warn.png';
 import down_arrow from './down_arrow.png';
+import form_inprocess from './form_inprocess.png';
+import form_pending from './form_pending.png';
+import form_tick from './form_tick.png';
 
 
 
@@ -38,6 +41,9 @@ export const assets = {
     rupee,
     warn,
     down_arrow,
+    form_inprocess,
+    form_pending,
+    form_tick,
 } 
 
 export const initialNotifications = [

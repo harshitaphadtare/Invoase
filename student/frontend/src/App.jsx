@@ -18,6 +18,7 @@ import Request from "./pages/Request";
 import Footer from "./components/Footer";
 import DonationReviewPage from "./pages/Donation/DonationView";
 import GstFormView from "./pages/Gst/GstView";
+import DonationSuccess from "./components/DonationSuccess";
 
 const App = () => {
   const location = useLocation();
@@ -48,6 +49,10 @@ const App = () => {
           <Route
             path="/sponsor/donation-form/view"
             element={<DonationReviewPage />}
+          />
+          <Route
+            path="/sponsor/donation-form/success"
+            element={<DonationSuccess />}
           />
           <Route path="/sponsor/gst-form" element={<GstForm />} />
           <Route path="/sponsor/gst-form/view" element={<GstFormView />} />
