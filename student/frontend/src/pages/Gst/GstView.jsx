@@ -1,7 +1,7 @@
 import React from "react";
 
-const GstView = () => {
+const GstFormView = () => {
   return <div>GstView</div>;
 };
 
-export default GstView;
+export default GstFormView;

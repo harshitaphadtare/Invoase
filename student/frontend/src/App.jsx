@@ -16,6 +16,8 @@ import Navbar from "./components/Navbar";
 import SuccessMsg from "./components/SuccessMsg";
 import Request from "./pages/Request";
 import Footer from "./components/Footer";
+import DonationReviewPage from "./pages/Donation/DonationView";
+import GstFormView from "./pages/Gst/GstView";
 
 const App = () => {
   const location = useLocation();
@@ -43,7 +45,12 @@ const App = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/reimburse" element={<ReimburseForm />} />
           <Route path="/sponsor/donation-form" element={<DonationForm />} />
+          <Route
+            path="/sponsor/donation-form/view"
+            element={<DonationReviewPage />}
+          />
           <Route path="/sponsor/gst-form" element={<GstForm />} />
+          <Route path="/sponsor/gst-form/view" element={<GstFormView />} />
           <Route path="/student/signup/success" element={<SuccessMsg />} />
         </Routes>
       </main>
