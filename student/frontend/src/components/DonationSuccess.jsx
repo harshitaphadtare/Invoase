@@ -20,64 +20,85 @@ const DonationSuccess = () => {
   }, []);
 
   return (
-    <div className="bg-[#F6F6F6] pt-6 pb-6">
-      <div className="bg-white px-6 py-4 rounded-lg shadow max-w-md mx-auto">
+    <div className="bg-[#F6F6F6] min-h-[500px] px-4 sm:px-6 py-4 sm:py-6">
+      <div className="bg-white px-4 sm:px-6 py-4 sm:py-5 rounded-lg shadow max-w-md mx-auto">
         {/* Success Tick */}
-        <div className="flex justify-center mb-3">
-          <img width={40} height={40} src={assets.success_tick} alt="" />
+        <div className="flex justify-center mb-3 sm:mb-4">
+          <img
+            className="w-8 h-8 sm:w-10 sm:h-10"
+            src={assets.success_tick}
+            alt="Success"
+          />
         </div>
-        <h2 className="text-center text-lg font-semibold mb-3">
+        <h2 className="text-center text-base sm:text-lg font-semibold mb-3 sm:mb-4">
           {isGstForm ? "GST Document" : "Donation Document"} Successfully
           Submitted
         </h2>
 
         {/* Reference Tab */}
-        <div className="bg-gray-50 p-3 rounded mb-3">
-          <div className="flex justify-between text-xs">
+        <div className="bg-gray-50 p-3 sm:p-4 rounded mb-3 sm:mb-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-4">
             <div>
-              <p className="text-gray-500">Submission Time</p>
-              <p className="font-semibold">March 15, 2024 14:30 GMT</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">
+                Submission Time
+              </p>
+              <p className="text-xs sm:text-sm font-semibold">
+                March 15, 2024 14:30 GMT
+              </p>
             </div>
             <div>
-              <p className="text-gray-500">Reference Number</p>
-              <p className="font-semibold">#REF-2024-03150089</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">
+                Reference Number
+              </p>
+              <p className="text-xs sm:text-sm font-semibold">
+                #REF-2024-03150089
+              </p>
             </div>
           </div>
         </div>
 
         {/* Next Steps */}
-        <div className="mb-4">
-          <h3 className="font-medium mb-2 text-sm">Next Steps</h3>
-          <ul className="text-xs list-none space-y-1">
-            <li className="flex items-center text-[#2C3E50]">
-              <FiFileText className="mr-2" />
-              Your document is under review by the Accountant
+        <div className="mb-4 sm:mb-5">
+          <h3 className="font-medium mb-2 sm:mb-3 text-xs sm:text-sm">
+            Next Steps
+          </h3>
+          <ul className="text-[10px] sm:text-xs list-none space-y-2">
+            <li className="flex items-start gap-2 text-[#2C3E50]">
+              <FiFileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5" />
+              <span>Your document is under review by the Accountant</span>
             </li>
-            <li className="flex items-center text-[#2C3E50]">
-              <FiBell className="mr-2" />
-              You will receive a notification once your document is processed
+            <li className="flex items-start gap-2 text-[#2C3E50]">
+              <FiBell className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5" />
+              <span>
+                You will receive a notification once your document is processed
+              </span>
             </li>
-            <li className="flex items-center text-[#2C3E50]">
-              <FiMail className="mr-2" />A confirmation email has been sent to
-              your registered email address
+            <li className="flex items-start gap-2 text-[#2C3E50]">
+              <FiMail className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5" />
+              <span>
+                A confirmation email has been sent to your registered email
+                address
+              </span>
             </li>
           </ul>
         </div>
 
         {/* Status Timeline */}
-        <div className="mb-4">
-          <h3 className="font-medium mb-2 text-sm">Status Timeline</h3>
-          <div className="text-xs relative pl-6">
+        <div className="mb-4 sm:mb-5">
+          <h3 className="font-medium mb-2 sm:mb-3 text-xs sm:text-sm">
+            Status Timeline
+          </h3>
+          <div className="text-[10px] sm:text-xs relative pl-6">
             <div className="absolute left-3 top-0 h-full border-l-2 border-gray-300"></div>
             <div className="flex items-center mb-3 relative">
               <img
                 src={assets.form_tick}
-                className="w-3 h-3 absolute -left-4"
-                alt=""
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 absolute -left-4"
+                alt="Submitted"
               />
               <div className="ml-2">
                 <span className="font-semibold text-gray-700">Submitted</span>
-                <span className="block text-[10px] text-gray-500">
+                <span className="block text-[9px] sm:text-[10px] text-gray-500">
                   March 15, 2024 14:30 GMT
                 </span>
               </div>
@@ -85,14 +106,14 @@ const DonationSuccess = () => {
             <div className="flex items-center mb-3 relative">
               <img
                 src={assets.form_inprocess}
-                className="w-3 h-3 absolute -left-4"
-                alt=""
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 absolute -left-4"
+                alt="In Review"
               />
               <div className="ml-2">
                 <span className="font-semibold text-gray-700">
                   Under Review
                 </span>
-                <span className="block text-[10px] text-gray-500">
+                <span className="block text-[9px] sm:text-[10px] text-gray-500">
                   Current Status
                 </span>
               </div>
@@ -100,27 +121,27 @@ const DonationSuccess = () => {
             <div className="flex items-center relative">
               <img
                 src={assets.form_pending}
-                className="w-3 h-3 absolute -left-4"
-                alt=""
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 absolute -left-4"
+                alt="Pending"
               />
               <div className="ml-2">
                 <span className="font-semibold text-gray-700">Processed</span>
-                <span className="block text-[10px] text-gray-500">Pending</span>
+                <span className="block text-[9px] sm:text-[10px] text-gray-500">
+                  Pending
+                </span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Buttons */}
-        <div className="flex justify-center gap-3">
-          <button className="px-16 py-2 text-xs font-semibold bg-[#2C3E50] text-white rounded hover:cursor-pointer hover:bg-gray-800">
+        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
+          <button className="w-full sm:w-auto px-8 sm:px-16 py-2.5 text-[10px] sm:text-xs font-semibold bg-[#2C3E50] text-white rounded hover:cursor-pointer hover:bg-gray-800 transition-colors">
             Track Status
           </button>
           <button
-            onClick={() => {
-              navigate("/dashboard");
-            }}
-            className="px-9 py-2 text-xs font-semibold bg-gray-100 text-[#2C3E50] rounded hover:cursor-pointer hover:bg-gray-200"
+            onClick={() => navigate("/dashboard")}
+            className="w-full sm:w-auto px-8 sm:px-9 py-2.5 text-[10px] sm:text-xs font-semibold bg-gray-100 text-[#2C3E50] rounded hover:cursor-pointer hover:bg-gray-200 transition-colors"
           >
             Return to Dashboard
           </button>

@@ -1,48 +1,45 @@
-import React from 'react';
+import React from "react";
+import { assets } from "../assets/assets";
 
 const AboutUs = () => {
   return (
-    <div className="relative bg-blue-50 min-h-screen text-gray-800 overflow-hidden">
-      {/* Background Decorative Elements */}
-      <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-green-200 rounded-full opacity-30 blur-3xl z-0"></div>
-      <div className="absolute bottom-[-120px] right-[-120px] w-[250px] h-[250px] bg-blue-300 rounded-full opacity-30 blur-2xl z-0"></div>
-      <div className="absolute top-[200px] right-[50px] w-[150px] h-[150px] bg-green-300 rounded-full opacity-20 blur-2xl z-0"></div>
+    <div className="bg-[#F6F6F6] min-h-screen px-6 py-16 flex flex-col md:flex-row items-center justify-center gap-10">
+      {/* Left - Text Content */}
+      <div className="bg-white shadow-md p-8 rounded-lg w-full md:w-1/2 max-w-xl">
+        <h2 className="text-2xl font-semibold text-[#2C3E50] mb-6">
+          Empowering Smart Financial Decisions
+        </h2>
+        <p className="text-gray-700 mb-4 text-sm">
+          Invoase is a revolutionary platform designed to streamline financial
+          approval processes for educational institutions and organizations.
+          By digitizing manual tasks, we help you save time, eliminate
+          paperwork, and improve transparency.
+        </p>
+        <p className="text-gray-700 mb-6 text-sm">
+          Our platform caters to different user roles – students, accountants,
+          and administrators – making financial workflows smooth and secure
+          through a centralized system. With intuitive design and data integrity
+          at the core, Invoase ensures your experience is seamless.
+        </p>
+        <a
+          href="/contact"
+          className="inline-block bg-[#38A37F] text-white px-6 py-2 rounded-md hover:bg-[#2C8565] transition duration-300"
+        >
+          Contact Us
+        </a>
+      </div>
 
-      {/* Main Content */}
-      <main className="relative z-10 max-w-6xl mx-auto py-16 px-6 grid md:grid-cols-2 gap-12 items-center">
-        {/* Text Section */}
-        <div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Empowering Smart Financial Decisions
-          </h2>
-          <p className="text-lg text-gray-600 mb-4">
-            Invoase is a revolutionary platform designed to streamline financial approval processes
-            for educational institutions and organizations. By digitizing manual tasks, we help you
-            save time, eliminate paperwork, and improve transparency.
-          </p>
-          <p className="text-lg text-gray-600 mb-6">
-            Our platform caters to different user roles – students, accountants, and administrators –
-            making financial workflows smooth and secure through a centralized system.
-          </p>
-          <a
-            href="/contact"
-            className="inline-block bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition"
-          >
-            Contact Us
-          </a>
-        </div>
-
-        {/* Image Section */}
-        <div className="flex justify-center">
-          <img
-            src="/assets/image.png" // Adjust path based on your project
-            alt="Team illustration"
-            className="w-full max-w-md rounded-lg shadow-md"
-          />
-        </div>
-      </main>
+      {/* Right - Visual or Logo */}
+      <div className="text-center">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-[#2C3E50] tracking-wide">
+          INVO<span className="text-[#38A37F]">₹</span>ASE
+        </h1>
+        <p className="mt-4 text-gray-500 max-w-sm mx-auto">
+          Revolutionizing finance through simplicity & security.
+        </p>
+      </div>
     </div>
   );
 };
 
-export default AboutUs;
+export default AboutUs

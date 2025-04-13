@@ -17,11 +17,13 @@ const GstFormView = () => {
   };
 
   return (
-    <div className="bg-[#F6F6F6] min-h-[521px] flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg shadow max-w-2xl w-full">
+    <div className="bg-[#F6F6F6] min-h-[600px] flex items-center justify-center p-4">
+      <div className="bg-white p-4 md:p-6 rounded-lg shadow max-w-2xl w-full">
         {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-semibold">GST Document Review</h1>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-0 mb-4">
+          <h1 className="text-lg md:text-xl font-semibold">
+            GST Document Review
+          </h1>
           <div className="flex items-center gap-1">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -43,7 +45,7 @@ const GstFormView = () => {
         </div>
 
         {/* Info Grid */}
-        <div className="grid grid-cols-1 pt-2 md:grid-cols-2 gap-4 text-xs text-gray-700 mb-4">
+        <div className="grid border border border-gray-300 rounded px-3 py-5 grid-cols-1 pt-2 md:grid-cols-2 gap-4 text-xs text-gray-700 mb-4">
           <div>
             <p className="font-medium text-gray-500">Payment Type</p>
             <p className="pt-1 text-gray-700 font-medium">
@@ -87,7 +89,7 @@ const GstFormView = () => {
         {/* Document Box */}
         <div className="mb-4">
           <p className="text-xs font-medium mb-1 text-gray-500">Document</p>
-          <div className="border border-dashed border-gray-300 p-3 rounded-lg flex items-center justify-between">
+          <div className="border border-dashed border-gray-300 p-3 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
             <div className="flex items-center">
               <FiFileText className="text-gray-500 w-4 h-4 mr-2" />
               <p className="text-gray-600 text-xs">
@@ -124,12 +126,12 @@ const GstFormView = () => {
         </div>
 
         {/* Footer Buttons */}
-        <div className="flex justify-between">
+        <div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
           <button
             onClick={() => {
               navigate("/sponsor/gst-form");
             }}
-            className="flex items-center hover:cursor-pointer gap-2 text-xs px-3 py-1 border border-gray-300 rounded hover:bg-gray-100"
+            className="flex items-center justify-center hover:cursor-pointer gap-2 text-xs px-3 py-2 border border-gray-300 rounded hover:bg-gray-100"
           >
             <FiArrowLeft className="w-3 h-3" />
             Back to Form
@@ -138,7 +140,7 @@ const GstFormView = () => {
             onClick={() => {
               navigate("/sponsor/gst-form/success");
             }}
-            className="flex items-center hover:cursor-pointer gap-2 text-xs px-3 py-1 bg-[#2C3E50] text-white rounded hover:bg-gray-900"
+            className="flex items-center justify-center hover:cursor-pointer gap-2 text-xs px-3 py-2 bg-[#2C3E50] text-white rounded hover:bg-gray-900"
           >
             Send Document
             <FiSend className="w-3 h-3" />

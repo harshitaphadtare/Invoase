@@ -2,21 +2,148 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SponsorForm = () => {
+  const navigate = useNavigate();
   const [paymentType, setPaymentType] = useState(
     window.location.pathname.includes("gst-form") ? "gst" : "donation"
   );
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [formData, setFormData] = useState({
+    companyName: "",
+    contactNumber: "",
+    panCard: "",
+    bankName: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
-  const navigate = useNavigate();
+  // Validation rules
+  const validateField = (name, value) => {
+    switch (name) {
+      case "companyName":
+        return value.trim() ? "" : "Company name is required";
+      case "contactNumber":
+        return /^\d{10}$/.test(value)
+          ? ""
+          : "Please enter a valid 10-digit number";
+      case "panCard":
+        return /^[A-Z]{5}\d{4}[A-Z]$/.test(value)
+          ? ""
+          : "Please enter a valid PAN number (5 letters + 4 numbers + 1 letter)";
+      case "bankName":
+        return value.trim() ? "" : "Bank name is required";
+      default:
+        return "";
+    }
+  };
+
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    let formattedValue = value;
+
+    // Format PAN card to uppercase
+    if (name === "panCard") {
+      formattedValue = value.toUpperCase();
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: formattedValue,
+    }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
+  // Handle input blur for validation
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
+
+  // File upload validation
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file type
+      const allowedTypes = ["application/pdf"];
+      if (!allowedTypes.includes(file.type)) {
+        setErrors((prev) => ({
+          ...prev,
+          file: "Only PDF files are allowed",
+        }));
+        setUploadedFile(null);
+        return;
+      }
+
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          file: "File size should be less than 10MB",
+        }));
+        setUploadedFile(null);
+        return;
+      }
+
+      setUploadedFile(file);
+      setErrors((prev) => ({ ...prev, file: "" }));
+    }
+  };
+
+  // Form validation before submission
+  const validateForm = () => {
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key]);
+      if (error) {
+        newErrors[key] = error;
+      }
+    });
+
+    if (!uploadedFile) {
+      newErrors.file = "Please upload required documents";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle form submission
+  const handleSubmit = () => {
+    // Mark all fields as touched
+    const touchedFields = {};
+    Object.keys(formData).forEach((key) => {
+      touchedFields[key] = true;
+    });
+    setTouched(touchedFields);
+
+    if (validateForm()) {
+      navigate("/sponsor/donation-form/view");
+    } else {
+      // Scroll to first error
+      const firstError = document.querySelector(".error-message");
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  };
 
   return (
-    <div className="h-auto bg-[#F6F6F6]">
-      <div className="max-w-[60%] mx-auto px-4 py-8">
+    <div className="min-h-screen bg-[#F6F6F6]">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Step 1 */}
-        <h2 className="text-sm font-medium mb-2">
+        <h2 className="text-sm font-medium mb-3">
           Step 1: Select Payment Type
         </h2>
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div
             className={`border bg-white rounded-md p-4 cursor-pointer transition-all ${
               paymentType === "donation"
@@ -24,12 +151,14 @@ const SponsorForm = () => {
                 : "border-gray-300"
             }`}
             onClick={() => {
-              setPaymentType("donation"); // Immediate visual feedback
-              setTimeout(() => navigate("/sponsor/donation-form"), 300); // Slight delay for navigation
+              setPaymentType("donation");
+              setTimeout(() => navigate("/sponsor/donation-form"), 300);
             }}
           >
-            <div className="flex justify-between items-center gap-2 font-semibold">
-              Donation Payment
+            <div className="flex justify-between items-center gap-2">
+              <span className="font-semibold text-sm sm:text-base">
+                Donation Payment
+              </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill={paymentType === "donation" ? "#333333" : "#BDBDBD"}
@@ -40,8 +169,8 @@ const SponsorForm = () => {
                 <path d="M17.726 13.02 14 16H9v-1h4.065a.5.5 0 0 0 .416-.777l-.888-1.332A1.995 1.995 0 0 0 10.93 12H3a1 1 0 0 0-1 1v6a2 2 0 0 0 2 2h9.639a3 3 0 0 0 2.258-1.024L22 13l-1.452-.484a2.998 2.998 0 0 0-2.822.504zm1.532-5.63c.451-.465.73-1.108.73-1.818s-.279-1.353-.73-1.818A2.447 2.447 0 0 0 17.494 3S16.25 2.997 15 4.286C13.75 2.997 12.506 3 12.506 3a2.45 2.45 0 0 0-1.764.753c-.451.466-.73 1.108-.73 1.818s.279 1.354.73 1.818L15 12l4.258-4.61z" />
               </svg>
             </div>
-            <p className="text-xs mt-1 text-gray-500">0% GST </p>
-            <p className="text-xs mt-3 text-gray-500">
+            <p className="text-xs mt-1 text-gray-500">0% GST</p>
+            <p className="text-xs mt-2 text-gray-500">
               Requires a confirmation letter, no GST applicable.
             </p>
           </div>
@@ -52,8 +181,8 @@ const SponsorForm = () => {
                 : "border-gray-300"
             }`}
             onClick={() => {
-              setPaymentType("gst"); // Immediate visual feedback
-              setTimeout(() => navigate("/sponsor/gst-form"), 300); // Slight delay for navigation
+              setPaymentType("gst");
+              setTimeout(() => navigate("/sponsor/gst-form"), 300);
             }}
           >
             <div className="flex justify-between items-center gap-2 font-semibold">
@@ -89,55 +218,119 @@ const SponsorForm = () => {
         </div>
 
         {/* Step 2 */}
-        <h2 className="text-sm font-medium mb-2">
+        <h2 className="text-sm font-medium mb-3">
           Step 2: Input Sponsor Details
         </h2>
-        <div className="bg-white rounded-md border border-gray-200 p-6 space-y-4 mb-6">
-          <p className="text-gray-600 text-sm font-semibold mb-1">
-            Company Name
-          </p>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-          />
+        <div className="bg-white rounded-md border border-gray-200 p-4 sm:p-6 space-y-4 mb-6">
+          <div className="space-y-2">
+            <p className="text-gray-600 text-sm font-semibold">Company Name</p>
+            <input
+              type="text"
+              name="companyName"
+              value={formData.companyName}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              className={`w-full border ${
+                touched.companyName && errors.companyName
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500`}
+              placeholder="Enter company name"
+            />
+            {touched.companyName && errors.companyName && (
+              <p className="text-red-500 text-xs mt-1 error-message">
+                {errors.companyName}
+              </p>
+            )}
+          </div>
 
-          <p className="text-gray-600 text-sm font-semibold mb-1">
-            Contact Number
-          </p>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-          />
+          <div className="space-y-2">
+            <p className="text-gray-600 text-sm font-semibold">
+              Contact Number
+            </p>
+            <input
+              type="tel"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              className={`w-full border ${
+                touched.contactNumber && errors.contactNumber
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500`}
+              placeholder="Enter 10-digit number"
+              maxLength={10}
+            />
+            {touched.contactNumber && errors.contactNumber && (
+              <p className="text-red-500 text-xs mt-1 error-message">
+                {errors.contactNumber}
+              </p>
+            )}
+          </div>
 
-          <p className="text-gray-600 text-sm font-semibold mb-1">Pan Card</p>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-          />
+          <div className="space-y-2">
+            <p className="text-gray-600 text-sm font-semibold">PAN Card</p>
+            <input
+              type="text"
+              name="panCard"
+              value={formData.panCard}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              className={`w-full border ${
+                touched.panCard && errors.panCard
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500`}
+              placeholder="Enter PAN number"
+              maxLength={10}
+            />
+            {touched.panCard && errors.panCard && (
+              <p className="text-red-500 text-xs mt-1 error-message">
+                {errors.panCard}
+              </p>
+            )}
+          </div>
 
-          <p className="text-gray-600 text-sm font-semibold mb-1">Bank Name</p>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-          />
+          <div className="space-y-2">
+            <p className="text-gray-600 text-sm font-semibold">Bank Name</p>
+            <input
+              type="text"
+              name="bankName"
+              value={formData.bankName}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              className={`w-full border ${
+                touched.bankName && errors.bankName
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500`}
+              placeholder="Enter bank name"
+            />
+            {touched.bankName && errors.bankName && (
+              <p className="text-red-500 text-xs mt-1 error-message">
+                {errors.bankName}
+              </p>
+            )}
+          </div>
 
           {/* Upload Box */}
-          <p className="text-gray-600 text-sm font-semibold mb-1">
-            Upload Documents
-          </p>
-          <div>
+          <div className="space-y-2">
+            <p className="text-gray-600 text-sm font-semibold">
+              Upload Documents
+            </p>
             <input
               type="file"
               id="fileUpload"
               className="hidden"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                setUploadedFile(file);
-              }}
+              onChange={handleFileChange}
+              accept=".pdf"
             />
             <label
               htmlFor="fileUpload"
-              className={`border border-dashed border-gray-300 rounded-lg py-10 p-6 flex flex-col items-center text-center text-sm text-gray-500 cursor-pointer hover:bg-gray-50 transition ${
+              className={`border-2 border-dashed ${
+                errors.file ? "border-red-500" : "border-gray-300"
+              } rounded-lg py-8 px-4 flex flex-col items-center text-center text-sm text-gray-500 cursor-pointer hover:bg-gray-50 transition ${
                 uploadedFile ? "border-blue-500 bg-blue-50 text-blue-600" : ""
               }`}
             >
@@ -157,21 +350,26 @@ const SponsorForm = () => {
                   <p className="mt-2 text-sm font-medium text-blue-700">
                     {uploadedFile.name}
                   </p>
-                  <p className="text-xs text-gray-400">Click to change</p>
+                  <p className="text-xs text-gray-400">Tap to change</p>
                 </>
               ) : (
                 <>
-                  <p>Upload a file or drag and drop</p>
+                  <p className="mt-2">Upload a file or tap here</p>
                   <p className="text-xs text-gray-400">PDF up to 10MB</p>
                 </>
               )}
             </label>
+            {errors.file && (
+              <p className="text-red-500 text-xs mt-1 error-message">
+                {errors.file}
+              </p>
+            )}
           </div>
         </div>
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center px-4 sm:px-0">
           <button
-            onClick={() => navigate("/sponsor/donation-form/view")}
-            className="bg-gray-700 items-center hover:cursor-pointer hover:bg-gray-800 text-white text-sm px-5 py-2 rounded shadow "
+            onClick={handleSubmit}
+            className="w-full sm:w-auto bg-gray-700 items-center hover:cursor-pointer hover:bg-gray-800 text-white text-sm px-8 py-3 rounded shadow disabled:opacity-50 disabled:cursor-not-allowed"
           >
             &#128196; Generate Document
           </button>

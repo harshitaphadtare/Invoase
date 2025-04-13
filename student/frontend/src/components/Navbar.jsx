@@ -53,9 +53,11 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
           <div
             onClick={() => navigate("/bank-details")}
-            className="flex justify-center items-center gap-2 bg-[#38A37F] px-4 py-2 rounded-lg shadow-md transition-all duration-300 hover:bg-[#2C8565] cursor-pointer"
+            className="flex justify-center items-center gap-2 bg-[#38A37F] px-3 py-2 sm:px-4 rounded-lg shadow-md transition-all duration-300 hover:bg-[#2C8565] cursor-pointer"
           >
-            <p className="font-medium text-sm text-white">Bank Details</p>
+            <p className="font-medium text-xs sm:text-sm text-white">
+              Bank Details
+            </p>
             <img
               className="w-4 h-4"
               src={assets.new_page}

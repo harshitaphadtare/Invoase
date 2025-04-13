@@ -6,17 +6,114 @@ const GstForm = () => {
     window.location.pathname.includes("gst-form") ? "gst" : "donation"
   );
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [formData, setFormData] = useState({
+    companyName: "",
+    contactNumber: "",
+    panCard: "",
+    gstNumber: "",
+    bankName: "",
+    billingAddress: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
+  const validateField = (name, value) => {
+    switch (name) {
+      case "companyName":
+        return value.trim() ? "" : "Company name is required";
+      case "contactNumber":
+        if (!value.trim()) return "Contact number is required";
+        if (!/^\d{10}$/.test(value))
+          return "Please enter a valid 10-digit contact number";
+        return "";
+      case "panCard":
+        if (!value.trim()) return "PAN card number is required";
+        if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value.toUpperCase()))
+          return "Please enter a valid PAN card number (e.g., ABCDE1234F)";
+        return "";
+      case "gstNumber":
+        if (!value.trim()) return "GST number is required";
+        if (!/^[0-9A-Z]{15}$/.test(value.toUpperCase()))
+          return "Please enter a valid 15-digit GST number";
+        return "";
+      case "bankName":
+        return value.trim() ? "" : "Bank name is required";
+      case "billingAddress":
+        return value.trim() ? "" : "Billing address is required";
+      default:
+        return "";
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const newValue =
+      name === "panCard" || name === "gstNumber" ? value.toUpperCase() : value;
+
+    setFormData({
+      ...formData,
+      [name]: newValue,
+    });
+
+    // Validate the field immediately
+    const error = validateField(name, newValue);
+    setErrors({
+      ...errors,
+      [name]: error,
+    });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    Object.keys(formData).forEach((field) => {
+      const error = validateField(field, formData[field]);
+      if (error) {
+        newErrors[field] = error;
+        isValid = false;
+      }
+    });
+
+    if (!uploadedFile) {
+      newErrors.fileUpload = "Please upload required documents";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    if (validateForm()) {
+      try {
+        // Here you would typically make an API call to submit the form
+        // For now, we'll just navigate to the next page
+        navigate("/sponsor/gst-form/view");
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        setErrors({
+          ...errors,
+          submit: "Failed to submit form. Please try again.",
+        });
+      }
+    }
+    setIsSubmitting(false);
+  };
+
   return (
     <div className="h-auto bg-[#F6F6F6]">
-      <div className="max-w-[60%] mx-auto px-4 py-8">
+      <div className="max-w-[90%] md:max-w-[80%] lg:max-w-[60%] mx-auto px-4 py-4 md:py-8">
         {/* Step 1 */}
         <h2 className="text-sm font-medium mb-2">
           Step 1: Select Payment Type
         </h2>
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div
             className={`border bg-white rounded-md p-4 cursor-pointer transition-all ${
               paymentType === "donation"
@@ -89,107 +186,218 @@ const GstForm = () => {
         </div>
 
         {/* Step 2 */}
-        <h2 className="text-sm font-medium mb-2">
-          Step 2: Input Sponsor Details
-        </h2>
-        <div className="bg-white rounded-md border border-gray-200 p-6 space-y-4 mb-6">
-          <p className="text-gray-600 text-sm font-semibold mb-1">
-            Company Name
-          </p>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-          />
+        <form onSubmit={handleSubmit}>
+          <h2 className="text-sm font-medium mb-2">
+            Step 2: Input Sponsor Details
+          </h2>
+          <div className="bg-white rounded-md border border-gray-200 p-4 md:p-6 space-y-4 mb-6">
+            <div>
+              <p className="text-gray-600 text-sm font-semibold mb-1">
+                Company Name
+              </p>
+              <input
+                type="text"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleInputChange}
+                className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                  errors.companyName
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-gray-500"
+                }`}
+              />
+              {errors.companyName && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.companyName}
+                </p>
+              )}
+            </div>
 
-          <p className="text-gray-600 text-sm font-semibold mb-1">
-            Contact Number
-          </p>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-          />
+            <div>
+              <p className="text-gray-600 text-sm font-semibold mb-1">
+                Contact Number
+              </p>
+              <input
+                type="text"
+                name="contactNumber"
+                value={formData.contactNumber}
+                onChange={handleInputChange}
+                className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                  errors.contactNumber
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-gray-500"
+                }`}
+              />
+              {errors.contactNumber && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.contactNumber}
+                </p>
+              )}
+            </div>
 
-          <p className="text-gray-600 text-sm font-semibold mb-1">Pan Card</p>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-          />
+            <div>
+              <p className="text-gray-600 text-sm font-semibold mb-1">
+                Pan Card
+              </p>
+              <input
+                type="text"
+                name="panCard"
+                value={formData.panCard}
+                onChange={handleInputChange}
+                className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                  errors.panCard
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-gray-500"
+                }`}
+              />
+              {errors.panCard && (
+                <p className="text-red-500 text-xs mt-1">{errors.panCard}</p>
+              )}
+            </div>
 
-          <p className="text-gray-600 text-sm font-semibold mb-1">GST Number</p>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-          />
+            <div>
+              <p className="text-gray-600 text-sm font-semibold mb-1">
+                GST Number
+              </p>
+              <input
+                type="text"
+                name="gstNumber"
+                value={formData.gstNumber}
+                onChange={handleInputChange}
+                className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                  errors.gstNumber
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-gray-500"
+                }`}
+              />
+              {errors.gstNumber && (
+                <p className="text-red-500 text-xs mt-1">{errors.gstNumber}</p>
+              )}
+            </div>
 
-          <p className="text-gray-600 text-sm font-semibold mb-1">Bank Name</p>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-          />
+            <div>
+              <p className="text-gray-600 text-sm font-semibold mb-1">
+                Bank Name
+              </p>
+              <input
+                type="text"
+                name="bankName"
+                value={formData.bankName}
+                onChange={handleInputChange}
+                className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                  errors.bankName
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-gray-500"
+                }`}
+              />
+              {errors.bankName && (
+                <p className="text-red-500 text-xs mt-1">{errors.bankName}</p>
+              )}
+            </div>
 
-          <p className="text-gray-600 text-sm font-semibold mb-1">
-            Billing Address
-          </p>
-          <textarea
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-            rows={4}
-          />
+            <div>
+              <p className="text-gray-600 text-sm font-semibold mb-1">
+                Billing Address
+              </p>
+              <textarea
+                name="billingAddress"
+                value={formData.billingAddress}
+                onChange={handleInputChange}
+                className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
+                  errors.billingAddress
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-gray-500"
+                }`}
+                rows={4}
+              />
+              {errors.billingAddress && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.billingAddress}
+                </p>
+              )}
+            </div>
 
-          {/* Upload Box */}
-          <p className="text-gray-600 text-sm font-semibold mb-1">
-            Upload Documents
-          </p>
-          <div>
-            <input
-              type="file"
-              id="fileUpload"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                setUploadedFile(file);
-              }}
-            />
-            <label
-              htmlFor="fileUpload"
-              className={`border border-dashed border-gray-300 rounded-lg py-10 p-6 flex flex-col items-center text-center text-sm text-gray-500 cursor-pointer hover:bg-gray-50 transition ${
-                uploadedFile ? "border-blue-500 bg-blue-50 text-blue-600" : ""
+            {/* Upload Box */}
+            <div>
+              <p className="text-gray-600 text-sm font-semibold mb-1">
+                Upload Documents
+              </p>
+              <div>
+                <input
+                  type="file"
+                  id="fileUpload"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setUploadedFile(file);
+                    if (errors.fileUpload) {
+                      setErrors({
+                        ...errors,
+                        fileUpload: "",
+                      });
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="fileUpload"
+                  className={`border border-dashed rounded-lg py-6 md:py-10 p-4 md:p-6 flex flex-col items-center text-center text-sm text-gray-500 cursor-pointer hover:bg-gray-50 transition ${
+                    errors.fileUpload ? "border-red-500" : "border-gray-300"
+                  } ${
+                    uploadedFile
+                      ? "border-blue-500 bg-blue-50 text-blue-600"
+                      : ""
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="30px"
+                    height="30px"
+                    viewBox="0 0 1024 1024"
+                  >
+                    <path
+                      fill="gray"
+                      d="M544 864V672h128L512 480 352 672h128v192H320v-1.6c-5.376.32-10.496 1.6-16 1.6A240 240 0 0 1 64 624c0-123.136 93.12-223.488 212.608-237.248A239.808 239.808 0 0 1 512 192a239.872 239.872 0 0 1 235.456 194.752c119.488 13.76 212.48 114.112 212.48 237.248a240 240 0 0 1-240 240c-5.376 0-10.56-1.28-16-1.6v1.6H544z"
+                    />
+                  </svg>
+                  {uploadedFile ? (
+                    <>
+                      <p className="mt-2 text-sm font-medium text-blue-700">
+                        {uploadedFile.name}
+                      </p>
+                      <p className="text-xs text-gray-400">Click to change</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>Upload a file or drag and drop</p>
+                      <p className="text-xs text-gray-400">PDF up to 10MB</p>
+                    </>
+                  )}
+                </label>
+                {errors.fileUpload && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.fileUpload}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+          {errors.submit && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
+              {errors.submit}
+            </div>
+          )}
+          <div className="flex justify-center mb-6">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`bg-gray-700 items-center hover:cursor-pointer hover:bg-gray-800 text-white text-sm px-5 py-2 rounded shadow w-full md:w-auto ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="30px"
-                height="30px"
-                viewBox="0 0 1024 1024"
-              >
-                <path
-                  fill="gray"
-                  d="M544 864V672h128L512 480 352 672h128v192H320v-1.6c-5.376.32-10.496 1.6-16 1.6A240 240 0 0 1 64 624c0-123.136 93.12-223.488 212.608-237.248A239.808 239.808 0 0 1 512 192a239.872 239.872 0 0 1 235.456 194.752c119.488 13.76 212.48 114.112 212.48 237.248a240 240 0 0 1-240 240c-5.376 0-10.56-1.28-16-1.6v1.6H544z"
-                />
-              </svg>
-              {uploadedFile ? (
-                <>
-                  <p className="mt-2 text-sm font-medium text-blue-700">
-                    {uploadedFile.name}
-                  </p>
-                  <p className="text-xs text-gray-400">Click to change</p>
-                </>
-              ) : (
-                <>
-                  <p>Upload a file or drag and drop</p>
-                  <p className="text-xs text-gray-400">PDF up to 10MB</p>
-                </>
-              )}
-            </label>
+              {isSubmitting ? "Processing..." : "Generate Document"}
+            </button>
           </div>
-        </div>
-        <div className="flex justify-center mb-6">
-          <button
-            onClick={() => navigate("/sponsor/gst-form/view")}
-            className="bg-gray-700 items-center hover:cursor-pointer hover:bg-gray-800 text-white text-sm px-5 py-2 rounded shadow "
-          >
-            &#128196; Generate Document
-          </button>
-        </div>
+        </form>
       </div>
     </div>
   );

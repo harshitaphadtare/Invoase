@@ -156,7 +156,7 @@ const Dashboard = () => {
     <div className="h-auto bg-[#F6F6F6] px-4 sm:p-10">
       {/* Header */}
       <div className="text-center mb-6">
-        <h2 className="my-5 text-xl text-[#2C3E50] font-bold">
+        <h2 className="pt-8 sm:pt-4 pb-2 text-xl text-[#2C3E50] font-bold">
           What would you like to do today?
         </h2>
         <div className="mt-3 flex flex-col md:flex-row justify-center gap-3 md:gap-4">
@@ -297,114 +297,167 @@ const Dashboard = () => {
       </div>
 
       {/* Document Status Table */}
-      {/* Recent Transactions Table */}
-      <div className="bg-white shadow-md rounded-lg mt-6 overflow-x-auto">
-        <div className="flex justify-between p-6 items-center ">
-          <h3 className="text-gray-800 text-lg font-semibold">
-            Document Status
-          </h3>
-          <div className="flex space-x-4">
-            <div className="relative">
-              <select
-                className="cursor-pointer hover:border-gray-500 bg-white border border-gray-200 rounded-md p-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                name="filter"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all-status">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
-            <div className="flex">
-              <div className="flex border border-gray-200 rounded gap-1 justify-between items-center px-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20px"
-                  height="20px"
-                  viewBox="0 0 24 24"
-                  fill="none"
+      <div className="bg-white shadow-md rounded-lg mt-6">
+        {/* Header and Filters - Fixed */}
+        <div className="p-6">
+          <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center">
+            <h3 className="text-gray-800 text-lg font-semibold">
+              Document Status
+            </h3>
+
+            {/* Responsive Filters */}
+            <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:space-x-4">
+              <div className="relative ">
+                <select
+                  className="w-full appearance-none cursor-pointer bg-white border border-gray-200 rounded-md p-2 pr-8 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  name="filter"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <path
-                    d="M14.9536 14.9458L21 21M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
-                    stroke="gray"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <option value="all-status">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                {/* Custom dropdown arrow */}
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              <div className="relative ">
+                <div className="flex w-full border border-gray-200 rounded-md overflow-hidden">
+                  <div className="flex items-center px-3 bg-gray-50">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20px"
+                      height="20px"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M14.9536 14.9458L21 21M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+                        stroke="gray"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="e.g.DOC-001"
+                    className="w-full p-2 focus:outline-none focus:ring-0 text-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="e.g.DOC-001"
-                  className="focus:outline-none focus:ring-0 text-sm"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <table className="w-full table-auto border-none">
-          <thead className="bg-[#F9FAFB] border-t border-b border-gray-200">
-            <tr className="text-left text-gray-500 text-xs font-bold">
-              <th className="py-3 px-6 font-semibold">Document ID</th>
-              <th className="py-3 px-6 font-semibold">Event Name</th>
-              <th className="py-3 px-6 font-semibold">Event Date</th>
-              <th className="py-3 px-6 font-semibold">Type</th>
-              <th className="py-3 px-6 font-semibold">Current Stage</th>
-              <th className="py-3 px-6 font-semibold">Status</th>
-              <th className="py-3 px-6 font-semibold">last Updated</th>
-              <th className="py-3 px-6 font-semibold">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* Sample Row */}
-            {filteredDocuments.length > 0 ? (
-              filteredDocuments.slice(-10).map((row) => (
-                <tr
-                  key={row.documentID}
-                  className="border-b border-gray-200 hover:bg-gray-50 text-sm"
-                >
-                  <td className="py-4 px-6 text-gray-500">{row.documentID}</td>
-                  <td className="py-4 px-6 text-black-800">{row.eventName}</td>
-                  <td className="py-4 px-6 text-gray-500">{row.eventDate}</td>
-                  <td className="py-4 px-6 text-gray-500">{row.type}</td>
-                  <td className="py-4 px-6 text-gray-500">{row.stage}</td>
-                  <td className="py-4">
-                    <span className={getStatusBadgeClasses(row.Status)}>
-                      {row.Status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-gray-500">{row.lastUpdated}</td>
-                  <td className="py-4 px-6">
-                    {row.Status.toLowerCase() === "rejected" ? (
-                      <button className="flex items-center gap-2 text-blue-600 hover:underline hover:cursor-pointer">
-                        <FiEdit /> Edit
-                      </button>
-                    ) : (
-                      <button className="flex items-center gap-2 text-green-600 hover:underline hover:cursor-pointer">
-                        <FiEye /> View
-                      </button>
-                    )}
+        {/* Table with horizontal scroll */}
+        <div className="overflow-x-auto">
+          <table className="w-full table-auto border-none">
+            <thead className="bg-[#F9FAFB] border-t border-b border-gray-200">
+              <tr className="text-left text-gray-500 text-xs font-bold">
+                <th className="py-3 px-6 whitespace-nowrap font-semibold">
+                  Document ID
+                </th>
+                <th className="py-3 px-6 whitespace-nowrap font-semibold">
+                  Event Name
+                </th>
+                <th className="py-3 px-6 whitespace-nowrap font-semibold">
+                  Event Date
+                </th>
+                <th className="py-3 px-6 whitespace-nowrap font-semibold">
+                  Type
+                </th>
+                <th className="py-3 px-6 whitespace-nowrap font-semibold">
+                  Current Stage
+                </th>
+                <th className="py-3 px-6 whitespace-nowrap font-semibold">
+                  Status
+                </th>
+                <th className="py-3 px-6 whitespace-nowrap font-semibold">
+                  last Updated
+                </th>
+                <th className="py-3 px-6 whitespace-nowrap font-semibold">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDocuments.length > 0 ? (
+                filteredDocuments.slice(-10).map((row) => (
+                  <tr
+                    key={row.documentID}
+                    className="border-b border-gray-200 hover:bg-gray-50 text-sm"
+                  >
+                    <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
+                      {row.documentID}
+                    </td>
+                    <td className="py-4 px-6 text-black-800 whitespace-nowrap">
+                      {row.eventName}
+                    </td>
+                    <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
+                      {row.eventDate}
+                    </td>
+                    <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
+                      {row.type}
+                    </td>
+                    <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
+                      {row.stage}
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      <span className={getStatusBadgeClasses(row.Status)}>
+                        {row.Status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
+                      {row.lastUpdated}
+                    </td>
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      {row.Status.toLowerCase() === "rejected" ? (
+                        <button className="flex items-center gap-2 text-blue-600 hover:underline hover:cursor-pointer">
+                          <FiEdit /> Edit
+                        </button>
+                      ) : (
+                        <button className="flex items-center gap-2 text-green-600 hover:underline hover:cursor-pointer">
+                          <FiEye /> View
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="8"
+                    className="text-center text-sm py-4 text-gray-500"
+                  >
+                    No documents found matching your criteria.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="10"
-                  className="text-center text-sm py-4 text-gray-500"
-                >
-                  No documents found matching your criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex pb-3 justify-between items-center mt-4">
         <p className="text-sm text-gray-500">Showing 1 to 10 of 100 results </p>
         <button
           onClick={() => navigate("/requests")}

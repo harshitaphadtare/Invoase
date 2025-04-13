@@ -80,7 +80,7 @@ const ReimburseView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] p-6">
+    <div className="min-h-screen bg-[#F5F5F5] p-4 md:p-6">
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -90,25 +90,25 @@ const ReimburseView = () => {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto grid grid-cols-3 gap-6">
+      <div className="max-w-[90%] md:max-w-[80%] lg:max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Left Section */}
-        <div className="col-span-2">
+        <div className="lg:col-span-2">
           <button
             onClick={() => {
               window.scrollTo(0, 0);
               navigate("/reimburse", { replace: true });
             }}
-            className="flex items-center text-gray-700 mb-6 hover:cursor-pointer"
+            className="flex items-center text-gray-700 mb-4 md:mb-6 hover:cursor-pointer"
           >
             <FiArrowLeft className="mr-2" />
             Back to Form
           </button>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
             {/* Event Details */}
             <div className="mb-4">
-              <div className="flex items-center justify-between">
-                <h1 className="text-[25px] font-medium mb-4">
+              <div className="flex flex-col mb-4 md:flex-row items-start md:items-center justify-between gap-2 md:gap-0">
+                <h1 className="text-xl md:text-[25px] font-medium">
                   Reimbursement Details
                 </h1>
                 <div className="flex items-center gap-1 bg-[#FFF9E7] px-2 py-1 rounded-full">
@@ -126,14 +126,14 @@ const ReimburseView = () => {
                       fill="#B54708"
                     />
                   </svg>
-                  <p className=" text-xs text-[#B54708] font-medium">
+                  <p className="text-xs text-[#B54708] font-medium">
                     Pending Review
                   </p>
                 </div>
               </div>
               <div className="border border-gray-200 rounded-lg p-4">
                 <h2 className="text-lg font-medium mb-4">Event Details</h2>
-                <div className="grid grid-cols-2 gap-4 ">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">Event Name</p>
                     <p className="font-medium">
@@ -163,53 +163,60 @@ const ReimburseView = () => {
             </div>
 
             {/* Bill Summary */}
-            <div className="mb-8">
+            <div className="mb-6 md:mb-8">
               <div className="bg-gray-50 rounded-lg p-4">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-sm text-gray-600">
-                      <th className="text-left py-2">Description</th>
-                      <th className="text-left py-2">Bill Date</th>
-                      <th className="text-right py-2">Amount</th>
-                      <th className="text-center py-2">Receipt</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {documentData.billSummary.map((bill) => (
-                      <tr key={bill.id} className="border-t border-gray-200">
-                        <td className="py-3">{bill.description}</td>
-                        <td className="py-3">{bill.billDate}</td>
-                        <td className="py-3 text-right">
-                          ₹{bill.amount.toFixed(2)}
-                        </td>
-                        <td className="py-3 text-center">
-                          <button
-                            onClick={() => handleViewReceipt(bill.receipt)}
-                            className="hover:cursor-pointer text-blue-600 hover:text-blue-800 text-sm"
+                <div className="overflow-x-auto">
+                  <div className="min-w-[600px]">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-sm text-gray-600">
+                          <th className="text-left py-2">Description</th>
+                          <th className="text-left py-2">Bill Date</th>
+                          <th className="text-right py-2">Amount</th>
+                          <th className="text-center py-2">Receipt</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {documentData.billSummary.map((bill) => (
+                          <tr
+                            key={bill.id}
+                            className="border-t border-gray-200"
                           >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="border-t border-gray-200 font-medium">
-                      <td colSpan="2" className="py-3">
-                        Total Amount
-                      </td>
-                      <td className="py-3 text-right">
-                        ₹{documentData.totalAmount.toFixed(2)}
-                      </td>
-                      <td></td>
-                    </tr>
-                  </tbody>
-                </table>
+                            <td className="py-3">{bill.description}</td>
+                            <td className="py-3">{bill.billDate}</td>
+                            <td className="py-3 text-right">
+                              ₹{bill.amount.toFixed(2)}
+                            </td>
+                            <td className="py-3 text-center">
+                              <button
+                                onClick={() => handleViewReceipt(bill.receipt)}
+                                className="hover:cursor-pointer text-blue-600 hover:text-blue-800 text-sm"
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        <tr className="border-t border-gray-200 font-medium">
+                          <td colSpan="2" className="py-3">
+                            Total Amount
+                          </td>
+                          <td className="py-3 text-right">
+                            ₹{documentData.totalAmount.toFixed(2)}
+                          </td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Approval Section */}
             <div>
               <h2 className="text-lg font-medium mb-4">Approval Section</h2>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-[#38A37F] text-white rounded-lg p-4 flex items-center justify-between">
                   <span>Financial Head</span>
                   <FiCheck className="w-5 h-5" />
@@ -232,8 +239,8 @@ const ReimburseView = () => {
         </div>
 
         {/* Right Section */}
-        <div className="col-span-1">
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 mb-4 md:mb-6">
             <h2 className="text-lg font-medium mb-4">Document Summary</h2>
             <div className="space-y-4">
               <div>
@@ -244,7 +251,7 @@ const ReimburseView = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Status</p>
-                <p className="bg-[#FFF9E7] px-2 mt-1 py-1 w-[33%] rounded-full text-xs text-[#B54708] font-medium">
+                <p className="bg-[#FFF9E7] px-2 mt-1 py-1 inline-block rounded-full text-xs text-[#B54708] font-medium">
                   {documentData.status}
                 </p>
               </div>
@@ -261,7 +268,7 @@ const ReimburseView = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
             <h2 className="text-lg font-medium mb-4">Approval Progress</h2>
             <div className="space-y-4">
               <div className="flex items-center">
@@ -291,7 +298,7 @@ const ReimburseView = () => {
             </div>
           </div>
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 md:mt-6 space-y-3">
             <button
               onClick={handleDownloadPDF}
               className="hover:cursor-pointer w-full px-4 py-2 border border-gray-300 rounded-lg text-sm flex items-center justify-center gap-2"

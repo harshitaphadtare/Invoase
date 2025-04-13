@@ -196,13 +196,13 @@ const ReimburseForm = () => {
   };
 
   return (
-    <div className="bg-[#F5F5F5]">
-      <div className="max-w-3xl mx-auto p-6">
+    <div className="bg-[#F5F5F5] min-h-screen">
+      <div className="max-w-[90%] md:max-w-[80%] lg:max-w-3xl mx-auto p-4 md:p-6">
         <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-xl font-semibold text-gray-800">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-0 mb-4 md:mb-6">
+              <h1 className="text-lg md:text-xl font-semibold text-gray-800">
                 Reimbursement Document
               </h1>
               <div className="flex items-center bg-gray-50 gap-2 border border-gray-300 rounded p-2">
@@ -220,9 +220,9 @@ const ReimburseForm = () => {
             </div>
 
             {/* Event Details Section */}
-            <div className="border border-gray-200 rounded-lg p-6 mb-6">
+            <div className="border border-gray-200 rounded-lg p-4 md:p-6 mb-4 md:mb-6">
               <h2 className="text-sm font-medium mb-4">Event Details</h2>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
                     Event Name{" "}
@@ -315,19 +315,19 @@ const ReimburseForm = () => {
             </div>
 
             {/* Bill Upload Section */}
-            <div className="mb-6">
+            <div className="mb-4 md:mb-6">
               <h2 className="text-sm font-medium mb-4">
                 Bill Upload{" "}
                 {shouldShowError("file") && (
                   <span className="text-red-500">*</span>
                 )}
               </h2>
-              <div className="flex gap-2 mb-4">
-                <button className="bg-[#2C3E50] text-white hover:cursor-pointer hover:bg-gray-800 px-4 py-2 rounded-md text-xs flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 mb-4">
+                <button className="bg-[#2C3E50] text-white hover:cursor-pointer hover:bg-gray-800 px-4 py-2 rounded-md text-xs flex items-center justify-center gap-2">
                   <FiUpload className="w-4 h-4" />
                   Take Photo
                 </button>
-                <label className="bg-white border border-gray-300 px-4 py-2 rounded text-xs text-gray-600 cursor-pointer hover:bg-gray-50">
+                <label className="bg-white border border-gray-300 px-4 py-2 rounded text-xs text-gray-600 cursor-pointer hover:bg-gray-50 flex items-center justify-center">
                   Upload File
                   <input
                     type="file"
@@ -347,55 +347,57 @@ const ReimburseForm = () => {
 
             {/* Bill Items Table */}
             {billItems.length > 0 && (
-              <div className="mb-6 bg-gray-50 rounded-lg p-4">
+              <div className="mb-4 md:mb-6 bg-gray-50 rounded-lg p-4">
                 <h3 className="text-sm font-medium mb-2">Uploaded Bills</h3>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-gray-600">
-                        <th className="text-left py-2">Vendor Name</th>
-                        <th className="text-left py-2">Date</th>
-                        <th className="text-right py-2">Amount</th>
-                        <th className="text-center py-2">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {billItems.map((item) => (
-                        <tr key={item.id}>
-                          <td className="py-2">{item.name}</td>
-                          <td className="py-2">{item.date}</td>
-                          <td className="py-2 text-right">
-                            ₹{item.amount.toFixed(2)}
-                          </td>
-                          <td className="py-2 text-center">
-                            <button
-                              onClick={() => handleDeleteBillItem(item.id)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <FiX className="w-4 h-4" />
-                            </button>
-                          </td>
+                  <div className="min-w-[600px]">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-gray-600">
+                          <th className="text-left py-2">Vendor Name</th>
+                          <th className="text-left py-2">Date</th>
+                          <th className="text-right py-2">Amount</th>
+                          <th className="text-center py-2">Action</th>
                         </tr>
-                      ))}
-                      <tr className="border-t">
-                        <td colSpan="2" className="py-2 font-medium">
-                          Total Amount
-                        </td>
-                        <td className="py-2 text-right font-medium">
-                          ₹{totalAmount.toFixed(2)}
-                        </td>
-                        <td></td>
-                      </tr>
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {billItems.map((item) => (
+                          <tr key={item.id}>
+                            <td className="py-2">{item.name}</td>
+                            <td className="py-2">{item.date}</td>
+                            <td className="py-2 text-right">
+                              ₹{item.amount.toFixed(2)}
+                            </td>
+                            <td className="py-2 text-center">
+                              <button
+                                onClick={() => handleDeleteBillItem(item.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <FiX className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        <tr className="border-t">
+                          <td colSpan="2" className="py-2 font-medium">
+                            Total Amount
+                          </td>
+                          <td className="py-2 text-right font-medium">
+                            ₹{totalAmount.toFixed(2)}
+                          </td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* Payee Details Section */}
-            <div className="mb-6">
+            <div className="mb-4 md:mb-6">
               <h2 className="text-sm font-medium mb-4">Payee Details</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
                     Account Holder Name{" "}
@@ -501,7 +503,7 @@ const ReimburseForm = () => {
               <div className="flex justify-end">
                 <button
                   onClick={handleGenerateDocument}
-                  className={`px-6 py-2 rounded-md text-sm flex items-center gap-2 ${
+                  className={`px-6 py-2 rounded-md text-sm flex items-center justify-center gap-2 w-full md:w-auto ${
                     formProgress === 100
                       ? "bg-[#2C3E50] text-white hover:bg-gray-800 hover:cursor-pointer"
                       : "bg-gray-400 text-white cursor-not-allowed"
