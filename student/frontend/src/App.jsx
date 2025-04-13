@@ -19,6 +19,7 @@ import Footer from "./components/Footer";
 import DonationReviewPage from "./pages/Donation/DonationView";
 import GstFormView from "./pages/Gst/GstView";
 import DonationSuccess from "./components/DonationSuccess";
+import ReimburseView from "./pages/Reimburse/ReimburseView";
 
 const App = () => {
   const location = useLocation();
@@ -45,6 +46,7 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/reimburse" element={<ReimburseForm />} />
+          <Route path="/reimburse/view" element={<ReimburseView />} />
           <Route
             path="/sponsor/donation-form/success"
             element={<DonationSuccess />}
@@ -62,6 +64,7 @@ const App = () => {
             path="/sponsor/donation-form/success"
             element={<DonationSuccess />}
           />
+          <Route path="/reimburse/success" element={<DonationSuccess />} />
           <Route path="/sponsor/gst-form" element={<GstForm />} />
           <Route path="/sponsor/gst-form/view" element={<GstFormView />} />
           <Route path="/student/signup/success" element={<SuccessMsg />} />

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaHome, FaPhoneAlt } from "react-icons/fa";
+import { FaHome } from "react-icons/fa";
 import { assets } from "../assets/assets";
 
 const SuccessMsg = () => {
