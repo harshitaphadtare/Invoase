@@ -18,6 +18,34 @@ const AccountantSignUp = () => {
 
   const [isLogin, setIsLogin] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    uniqueCode: "",
+    email: "",
+    password: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isLogin) {
+      // Here you would typically make an API call to verify credentials
+      // For now, we'll just redirect to the accountant dashboard
+      navigate("/accountant/dashboard");
+    } else {
+      // Handle signup logic here
+      // After successful signup, you might want to redirect to login
+      setIsLogin(true);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -61,13 +89,19 @@ const AccountantSignUp = () => {
         </h2>
 
         {/* Form */}
-        <form className="flex flex-col mx-5 items-center mt-6 space-y-2">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col mx-5 items-center mt-6 space-y-2"
+        >
           {/*name*/}
           {!isLogin && (
             <div className="relative w-full">
               <FaUser className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
               <input
                 type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
                 placeholder="Enter full name"
                 className="w-full h-9 text-xs pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
               />
@@ -81,6 +115,9 @@ const AccountantSignUp = () => {
                 <FaPhone className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
                 <input
                   type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
                   placeholder="Enter phone number"
                   className="w-full h-9 text-xs pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
                 />
@@ -89,6 +126,9 @@ const AccountantSignUp = () => {
                 <FaHashtag className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
                 <input
                   type="text"
+                  name="uniqueCode"
+                  value={formData.uniqueCode}
+                  onChange={handleInputChange}
                   placeholder="Unique code"
                   className="w-full text-xs h-9 pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
                 />
@@ -101,6 +141,9 @@ const AccountantSignUp = () => {
             <FaEnvelope className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
             <input
               type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
               placeholder="Enter college email"
               className="w-full text-xs pl-9 h-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
             />
@@ -111,6 +154,9 @@ const AccountantSignUp = () => {
             <FaLock className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
             <input
               type={passwordVisible ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
               placeholder="Create a password"
               className="w-full text-xs pl-9 h-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
             />
@@ -143,7 +189,10 @@ const AccountantSignUp = () => {
             </div>
           )}
 
-          <button className="w-full mt-3 rounded-lg bg-[#38A37F] p-2 text-sm text-white transition-all duration-300 hover:bg-[#2C8565]  hover:font-semibold cursor-pointer">
+          <button
+            type="submit"
+            className="w-full mt-3 rounded-lg bg-[#38A37F] p-2 text-sm text-white transition-all duration-300 hover:bg-[#2C8565]  hover:font-semibold cursor-pointer"
+          >
             {isLogin ? "Log in" : "Create Account"}
           </button>
           <button
