@@ -101,21 +101,23 @@ const SuccessMsg = () => {
                 alt=""
               />
               <div className="ml-2">
-                <span className="font-semibold text-gray-700">Processed</span>
-                <span className="block text-[10px] text-gray-500">Pending</span>
+                <span className="font-semibold text-gray-700">Pending</span>
+                <span className="block text-[10px] text-gray-500">
+                  Awaiting Processing
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Buttons */}
+        {/* Action Buttons */}
         <div className="flex justify-center gap-3">
           <button className="px-16 py-2 text-xs font-semibold bg-[#2C3E50] text-white rounded hover:cursor-pointer hover:bg-gray-800">
             Track Status
           </button>
           <button
             onClick={() => navigate("/dashboard")}
-            className="px-9 py-2 text-xs font-semibold bg-gray-100 text-[#2C3E50] rounded hover:cursor-pointer hover:bg-gray-200"
+            className="px-16 py-2 text-xs font-semibold bg-gray-100 text-[#2C3E50] rounded hover:cursor-pointer hover:bg-gray-200"
           >
             Return to Dashboard
           </button>
