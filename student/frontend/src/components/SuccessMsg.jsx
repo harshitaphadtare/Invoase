@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
-import { FiFileText, FiBell, FiMail } from "react-icons/fi";
+import { FaHome } from "react-icons/fa";
 
 const SuccessMsg = () => {
   const navigate = useNavigate();
@@ -18,109 +18,71 @@ const SuccessMsg = () => {
   }, []);
 
   return (
-    <div className="bg-[#F6F6F6] pt-6 pb-6">
-      <div className="bg-white px-6 py-4 rounded-lg shadow max-w-md mx-auto">
-        {/* Success Tick */}
-        <div className="flex justify-center mb-3">
-          <img width={40} height={40} src={assets.success_tick} alt="" />
+    <div className="min-h-screen bg-[#F6F6F6] flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-sm w-full max-w-md p-6">
+        {/* Success Icon */}
+        <div className="flex justify-center mb-4 mt-5">
+          <img src={assets.success_tick} alt="Success" className="w-13 h-13" />
         </div>
-        <h2 className="text-center text-lg font-semibold mb-3">
-          Donation Document Successfully Submitted
+
+        {/* Success Message */}
+        <h2 className="text-center text-xl font-bold text-gray-800 mb-2">
+          Successfully Signed Up!
         </h2>
+        <p className="text-center text-gray-600 text-sm mb-6">
+          Thank you for registering with us
+        </p>
 
-        {/* Reference Tab */}
-        <div className="bg-gray-50 p-3 rounded mb-3">
-          <div className="flex justify-between text-xs">
-            <div>
-              <p className="text-gray-500">Submission Time</p>
-              <p className="font-semibold">March 15, 2024 14:30 GMT</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Reference Number</p>
-              <p className="font-semibold">#REF-2024-03150089</p>
-            </div>
+        {/* Verification Status */}
+        <div className="bg-[#EFF6FF] rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-2 text-gray-700">
+            <img src={assets.clock} alt="" className="w-3 h-3" />
+            <p className="font-medium">Account Verification in Progress</p>
           </div>
-        </div>
-
-        {/* Next Steps */}
-        <div className="mb-4">
-          <h3 className="font-medium mb-2 text-sm">Next Steps</h3>
-          <ul className="text-xs list-none space-y-1">
-            <li className="flex items-center text-[#2C3E50]">
-              <FiFileText className="mr-2" />
-              Your document is under review by the Accountant
-            </li>
-            <li className="flex items-center text-[#2C3E50]">
-              <FiBell className="mr-2" />
-              You will receive a notification once your document is processed
-            </li>
-            <li className="flex items-center text-[#2C3E50]">
-              <FiMail className="mr-2" />A confirmation email has been sent to
-              your registered email address
-            </li>
-          </ul>
-        </div>
-
-        {/* Status Timeline */}
-        <div className="mb-4">
-          <h3 className="font-medium mb-2 text-sm">Status Timeline</h3>
-          <div className="text-xs relative pl-6">
-            <div className="absolute left-3 top-0 h-full border-l-2 border-gray-300"></div>
-            <div className="flex items-center mb-3 relative">
-              <img
-                src={assets.form_tick}
-                className="w-3 h-3 absolute -left-4"
-                alt=""
-              />
-              <div className="ml-2">
-                <span className="font-semibold text-gray-700">Submitted</span>
-                <span className="block text-[10px] text-gray-500">
-                  March 15, 2024 14:30 GMT
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center mb-3 relative">
-              <img
-                src={assets.form_inprocess}
-                className="w-3 h-3 absolute -left-4"
-                alt=""
-              />
-              <div className="ml-2">
-                <span className="font-semibold text-gray-700">
-                  Under Review
-                </span>
-                <span className="block text-[10px] text-gray-500">
-                  Current Status
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center relative">
-              <img
-                src={assets.form_pending}
-                className="w-3 h-3 absolute -left-4"
-                alt=""
-              />
-              <div className="ml-2">
-                <span className="font-semibold text-gray-700">Pending</span>
-                <span className="block text-[10px] text-gray-500">
-                  Awaiting Processing
-                </span>
-              </div>
-            </div>
-          </div>
+          <p className="text-gray-600 text-sm mt-1 ml-4">
+            Your account is currently pending admin verification. This process
+            typically takes 1-2 hours.
+          </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-center gap-3">
-          <button className="px-16 py-2 text-xs font-semibold bg-[#2C3E50] text-white rounded hover:cursor-pointer hover:bg-gray-800">
-            Track Status
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate("/")}
+            className="hover:cursor-pointer flex-1 px-2 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm"
+          >
+            <FaHome />
+            Return to Home
           </button>
           <button
-            onClick={() => navigate("/dashboard")}
-            className="px-16 py-2 text-xs font-semibold bg-gray-100 text-[#2C3E50] rounded hover:cursor-pointer hover:bg-gray-200"
+            onClick={() => window.open("/support", "_blank")}
+            className="hover:cursor-pointer flex justify-center items-center gap-2 px-8 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors text-sm"
           >
-            Return to Dashboard
+            <img className="w-4 h-4" src={assets.support} alt="" />
+            Contact Support
           </button>
+        </div>
+
+        <hr className="my-4 border-gray-200" />
+
+        {/* Footer */}
+        <div className="mt-6 text-center text-xs text-gray-500">
+          <p>
+            Need help? Contact us at{" "}
+            <a
+              href="mailto:support@example.com"
+              className="text-blue-600 hover:underline"
+            >
+              support@example.com
+            </a>
+          </p>
+          <p className="mt-1">
+            View our{" "}
+            <a href="/faq" className="text-blue-600 hover:underline">
+              FAQ
+            </a>{" "}
+            for common questions during verification
+          </p>
         </div>
       </div>
     </div>
