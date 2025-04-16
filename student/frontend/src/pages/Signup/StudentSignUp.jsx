@@ -74,6 +74,7 @@ export default function SignupForm() {
             <div className="relative w-full">
               <FaUser className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
               <input
+                name="name"
                 type="text"
                 placeholder="Enter full name"
                 className="w-full h-9 text-xs pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
@@ -87,6 +88,7 @@ export default function SignupForm() {
               <div className="relative w-2/4">
                 <FaPhone className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
                 <input
+                  name="phoneNumber"
                   type="text"
                   placeholder="Enter phone number"
                   className="w-full h-9 text-xs pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
@@ -94,11 +96,15 @@ export default function SignupForm() {
               </div>
               <div className="relative w-2/4">
                 <FaCalendarAlt className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
-                <select className="w-full cursor-pointer h-9 text-xs pl-8 rounded-lg border border-[#9CA3AF] bg-[#374859] p-2 text-[#9CA3AF] transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none">
+                <select
+                  name="tenure"
+                  className="w-full cursor-pointer h-9 text-xs pl-8 rounded-lg border border-[#9CA3AF] bg-[#374859] p-2 text-[#9CA3AF] transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
+                >
                   <option>Select tenure</option>
-                  <option>1 Year</option>
-                  <option>2 Years</option>
-                  <option>3 Years</option>
+                  <option>1st Year</option>
+                  <option>2nd Year</option>
+                  <option>3rd Year</option>
+                  <option>4th Year</option>
                 </select>
               </div>
             </div>
@@ -109,6 +115,7 @@ export default function SignupForm() {
               <div className="relative w-2/3">
                 <FaBuilding className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
                 <input
+                  name="councilName"
                   type="text"
                   placeholder="Enter council name"
                   className="w-full h-9 text-xs pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
@@ -119,6 +126,7 @@ export default function SignupForm() {
               <div className="relative w-1/3">
                 <FaHashtag className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
                 <input
+                  name="councilCode"
                   type="text"
                   placeholder="Council code"
                   className="w-full text-xs h-9 pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
@@ -131,6 +139,7 @@ export default function SignupForm() {
           <div className="relative w-full">
             <FaEnvelope className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
             <input
+              name="email"
               type="email"
               placeholder="Enter college email"
               className="w-full text-xs pl-9 h-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
@@ -141,6 +150,7 @@ export default function SignupForm() {
           <div className="relative w-full">
             <FaLock className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
             <input
+              name="password"
               type={passwordVisible ? "text" : "password"}
               placeholder="Create a password"
               className="w-full text-xs pl-9 h-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"

@@ -21,7 +21,7 @@ const AccountantSignUp = () => {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
-    uniqueCode: "",
+    department: "",
     email: "",
     password: "",
   });
@@ -115,7 +115,7 @@ const AccountantSignUp = () => {
                 <FaPhone className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
                 <input
                   type="text"
-                  name="phone"
+                  name="phoneNumber"
                   value={formData.phone}
                   onChange={handleInputChange}
                   placeholder="Enter phone number"
@@ -126,10 +126,10 @@ const AccountantSignUp = () => {
                 <FaHashtag className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
                 <input
                   type="text"
-                  name="uniqueCode"
-                  value={formData.uniqueCode}
+                  name="department"
+                  value={formData.department}
                   onChange={handleInputChange}
-                  placeholder="Unique code"
+                  placeholder="Department"
                   className="w-full text-xs h-9 pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
                 />
               </div>
