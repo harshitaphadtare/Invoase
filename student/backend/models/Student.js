@@ -29,11 +29,6 @@ const studentSchema = new mongoose.Schema({
         required: [true, 'Council name is required'],
         trim: true
     },
-    councilCode: {
-        type: String,
-        required: [true, 'Council code is required'],
-        trim: true
-    },
     tenure: {
         type: String,
         enum: ['1st year', '2nd year', '3rd year', '4th year'],
@@ -58,7 +53,8 @@ const studentSchema = new mongoose.Schema({
         ifscCode: {
             type: String,
             required: [true, 'IFSC code is required'],
-            trim: true
+            trim: true,
+            match: [/^[A-Z]{4}[A-Z0-9]{7}$/, 'Please enter a valid IFSC code']
         }
     },
     isVerified: {

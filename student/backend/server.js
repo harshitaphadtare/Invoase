@@ -3,7 +3,6 @@ import cors from "cors";
 import connectDB from "./config/mongodb.js";
 import "dotenv/config";
 import connectCloudinary from "./config/cloudinary.js";
-import mongoose from 'mongoose';
 import studentRoutes from './routes/studentRoutes.js';
 import staffRoutes from './routes/staffRoutes.js';
 

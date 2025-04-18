@@ -7,16 +7,17 @@ import {
     changePassword
 } from '../controllers/StudentController.js';
 import { auth } from '../middleware/auth.js';
+import upload from '../middleware/multer.js';
 
-const router = express.Router();
+const studentRouter = express.Router();
 
 // Public routes
-router.post('/register', registerStudent);
-router.post('/login', loginStudent);
+studentRouter.post('/register', registerStudent);
+studentRouter.post('/login', loginStudent);
 
 // Protected routes
-router.get('/profile', auth, getStudentProfile);
-router.put('/profile', auth, updateStudentProfile);
-router.put('/change-password', auth, changePassword);
+studentRouter.get('/profile', auth, getStudentProfile);
+studentRouter.patch('/profile', auth, updateStudentProfile);
+studentRouter.put('/change-password', auth, changePassword);
 
-export default router; 
+export default studentRouter; 

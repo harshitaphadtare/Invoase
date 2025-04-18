@@ -2,15 +2,49 @@ import Student from '../models/Student.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+// Array of valid council codes
+const VALID_COUNCIL_CODES = ['SVU123', 'SVU567', 'SVU789'];
+
+// Custom error class for student-related errors
+class StudentError extends Error {
+    constructor(message, statusCode, errorCode) {
+        super(message);
+        this.statusCode = statusCode;
+        this.errorCode = errorCode;
+        this.name = 'StudentError';
+    }
+}
+
 // Register a new student
 export const registerStudent = async (req, res) => {
     try {
         const { name, email, password, phoneNumber, councilName, councilCode, tenure, bankDetails } = req.body;
 
+        // Validate required fields
+        if (!name || !email || !password || !phoneNumber || !councilName || !councilCode || !tenure) {
+            throw new StudentError('All fields are required', 400, 'MISSING_FIELDS');
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            throw new StudentError('Invalid email format', 400, 'INVALID_EMAIL');
+        }
+
+        // Validate password strength
+        if (password.length < 6) {
+            throw new StudentError('Password must be at least 6 characters long', 400, 'WEAK_PASSWORD');
+        }
+
+        // Validate council code
+        if (!VALID_COUNCIL_CODES.includes(councilCode)) {
+            throw new StudentError('Invalid council code', 400, 'INVALID_COUNCIL_CODE');
+        }
+
         // Check if student already exists
         const existingStudent = await Student.findOne({ email });
         if (existingStudent) {
-            return res.status(400).json({ message: 'Student already exists with this email' });
+            throw new StudentError('Student already exists with this email', 409, 'EMAIL_EXISTS');
         }
 
         // Hash password
@@ -50,7 +84,17 @@ export const registerStudent = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof StudentError) {
+            res.status(error.statusCode).json({
+                message: error.message,
+                errorCode: error.errorCode
+            });
+        } else {
+            res.status(500).json({
+                message: 'Internal server error',
+                errorCode: 'INTERNAL_SERVER_ERROR'
+            });
+        }
     }
 };
 
@@ -59,16 +103,21 @@ export const loginStudent = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        // Validate required fields
+        if (!email || !password) {
+            throw new StudentError('Email and password are required', 400, 'MISSING_CREDENTIALS');
+        }
+
         // Find student
         const student = await Student.findOne({ email });
         if (!student) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            throw new StudentError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
         }
 
         // Check password
         const isMatch = await bcrypt.compare(password, student.password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            throw new StudentError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
         }
 
         // Create JWT token
@@ -89,40 +138,76 @@ export const loginStudent = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof StudentError) {
+            res.status(error.statusCode).json({
+                message: error.message,
+                errorCode: error.errorCode
+            });
+        } else {
+            res.status(500).json({
+                message: 'Internal server error',
+                errorCode: 'INTERNAL_SERVER_ERROR'
+            });
+        }
     }
 };
 
 // Get student profile
 export const getStudentProfile = async (req, res) => {
     try {
+        if (!req.user || !req.user.id) {
+            throw new StudentError('Authentication required', 401, 'UNAUTHORIZED');
+        }
+
         const student = await Student.findById(req.user.id).select('-password');
         if (!student) {
-            return res.status(404).json({ message: 'Student not found' });
+            throw new StudentError('Student not found', 404, 'STUDENT_NOT_FOUND');
         }
         res.json(student);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof StudentError) {
+            res.status(error.statusCode).json({
+                message: error.message,
+                errorCode: error.errorCode
+            });
+        } else {
+            res.status(500).json({
+                message: 'Internal server error',
+                errorCode: 'INTERNAL_SERVER_ERROR'
+            });
+        }
     }
 };
 
 // Update student profile
 export const updateStudentProfile = async (req, res) => {
     try {
-        const { name, phoneNumber, councilName, councilCode, tenure, bankDetails } = req.body;
-        
-        const student = await Student.findById(req.user.id);
-        if (!student) {
-            return res.status(404).json({ message: 'Student not found' });
+        if (!req.user || !req.user.id) {
+            throw new StudentError('Authentication required', 401, 'UNAUTHORIZED');
         }
 
-        // Update fields
-        student.name = name || student.name;
-        student.phoneNumber = phoneNumber || student.phoneNumber;
-        student.councilName = councilName || student.councilName;
-        student.councilCode = councilCode || student.councilCode;
-        student.tenure = tenure || student.tenure;
-        student.bankDetails = bankDetails || student.bankDetails;
+        // Check if email update is attempted
+        if (req.body.email) {
+            throw new StudentError(
+                'Email cannot be updated. Please contact administrator for email changes.',
+                400,
+                'EMAIL_UPDATE_NOT_ALLOWED'
+            );
+        }
+
+        const student = await Student.findById(req.user.id);
+        if (!student) {
+            throw new StudentError('Student not found', 404, 'STUDENT_NOT_FOUND');
+        }
+
+        // Only update fields that are actually sent in the request
+        const updatableFields = ['name', 'phoneNumber', 'councilName', 'tenure', 'bankDetails'];
+        
+        for (const [key, value] of Object.entries(req.body)) {
+            if (updatableFields.includes(key) && value !== undefined) {
+                student[key] = value;
+            }
+        }
 
         await student.save();
 
@@ -133,28 +218,74 @@ export const updateStudentProfile = async (req, res) => {
                 name: student.name,
                 email: student.email,
                 councilName: student.councilName,
-                tenure: student.tenure
+                tenure: student.tenure,
+                bankDetails: student.bankDetails
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof StudentError) {
+            res.status(error.statusCode).json({
+                message: error.message,
+                errorCode: error.errorCode
+            });
+        } else {
+            res.status(500).json({
+                message: 'Internal server error',
+                errorCode: 'INTERNAL_SERVER_ERROR'
+            });
+        }
     }
 };
 
 // Change password
 export const changePassword = async (req, res) => {
     try {
+        if (!req.user || !req.user.id) {
+            throw new StudentError('Authentication required', 401, 'UNAUTHORIZED');
+        }
+
         const { currentPassword, newPassword } = req.body;
+
+        // Check if both passwords are provided
+        if (!currentPassword || !newPassword) {
+            throw new StudentError(
+                'Both current password and new password are required',
+                400,
+                'MISSING_PASSWORDS'
+            );
+        }
+
+        // Validate new password
+        if (newPassword.length < 6) {
+            throw new StudentError(
+                'New password must be at least 6 characters long',
+                400,
+                'WEAK_PASSWORD'
+            );
+        }
+
+        // Check if new password is same as current password
+        if (currentPassword === newPassword) {
+            throw new StudentError(
+                'New password must be different from current password',
+                400,
+                'SAME_PASSWORD'
+            );
+        }
 
         const student = await Student.findById(req.user.id);
         if (!student) {
-            return res.status(404).json({ message: 'Student not found' });
+            throw new StudentError('Student not found', 404, 'STUDENT_NOT_FOUND');
         }
 
         // Check current password
         const isMatch = await bcrypt.compare(currentPassword, student.password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Current password is incorrect' });
+            throw new StudentError(
+                'Current password is incorrect',
+                400,
+                'INVALID_CURRENT_PASSWORD'
+            );
         }
 
         // Hash new password
@@ -164,9 +295,22 @@ export const changePassword = async (req, res) => {
         student.password = hashedPassword;
         await student.save();
 
-        res.json({ message: 'Password changed successfully' });
+        res.json({ 
+            message: 'Password changed successfully',
+            status: 'SUCCESS'
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        if (error instanceof StudentError) {
+            res.status(error.statusCode).json({
+                message: error.message,
+                errorCode: error.errorCode
+            });
+        } else {
+            res.status(500).json({
+                message: 'Internal server error',
+                errorCode: 'INTERNAL_SERVER_ERROR'
+            });
+        }
     }
 };
 
