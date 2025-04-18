@@ -26,9 +26,9 @@ export const registerStudent = async (req, res) => {
         }
 
         // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[a-zA-Z0-9._-]+@somaiya\.edu$/;
         if (!emailRegex.test(email)) {
-            throw new StudentError('Invalid email format', 400, 'INVALID_EMAIL');
+            throw new StudentError('Please enter a valid Somaiya email address', 400, 'INVALID_EMAIL');
         }
 
         // Validate password strength
@@ -47,8 +47,8 @@ export const registerStudent = async (req, res) => {
             throw new StudentError('Student already exists with this email', 409, 'EMAIL_EXISTS');
         }
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
+        // Hash password with higher salt rounds for better security
+        const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Create new student
@@ -73,6 +73,7 @@ export const registerStudent = async (req, res) => {
         );
 
         res.status(201).json({
+            success: true,
             message: 'Student registered successfully',
             token,
             student: {
@@ -80,19 +81,24 @@ export const registerStudent = async (req, res) => {
                 name: student.name,
                 email: student.email,
                 councilName: student.councilName,
-                tenure: student.tenure
+                tenure: student.tenure,
+                isVerified: student.isVerified
             }
         });
     } catch (error) {
+        console.error('Registration error:', error);
         if (error instanceof StudentError) {
             res.status(error.statusCode).json({
+                success: false,
                 message: error.message,
                 errorCode: error.errorCode
             });
         } else {
             res.status(500).json({
-                message: 'Internal server error',
-                errorCode: 'INTERNAL_SERVER_ERROR'
+                success: false,
+                message: 'Internal server error during registration',
+                errorCode: 'INTERNAL_SERVER_ERROR',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
     }
@@ -114,7 +120,7 @@ export const loginStudent = async (req, res) => {
             throw new StudentError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
         }
 
-        // Check password
+        // Check password with bcrypt
         const isMatch = await bcrypt.compare(password, student.password);
         if (!isMatch) {
             throw new StudentError('Invalid credentials', 401, 'INVALID_CREDENTIALS');
@@ -128,25 +134,32 @@ export const loginStudent = async (req, res) => {
         );
 
         res.json({
+            success: true,
+            message: 'Login successful',
             token,
             student: {
                 id: student._id,
                 name: student.name,
                 email: student.email,
                 councilName: student.councilName,
-                tenure: student.tenure
+                tenure: student.tenure,
+                isVerified: student.isVerified
             }
         });
     } catch (error) {
+        console.error('Login error:', error);
         if (error instanceof StudentError) {
             res.status(error.statusCode).json({
+                success: false,
                 message: error.message,
                 errorCode: error.errorCode
             });
         } else {
             res.status(500).json({
-                message: 'Internal server error',
-                errorCode: 'INTERNAL_SERVER_ERROR'
+                success: false,
+                message: 'Internal server error during login',
+                errorCode: 'INTERNAL_SERVER_ERROR',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
     }
@@ -163,17 +176,24 @@ export const getStudentProfile = async (req, res) => {
         if (!student) {
             throw new StudentError('Student not found', 404, 'STUDENT_NOT_FOUND');
         }
-        res.json(student);
+        res.json({
+            success: true,
+            student
+        });
     } catch (error) {
+        console.error('Get profile error:', error);
         if (error instanceof StudentError) {
             res.status(error.statusCode).json({
+                success: false,
                 message: error.message,
                 errorCode: error.errorCode
             });
         } else {
             res.status(500).json({
-                message: 'Internal server error',
-                errorCode: 'INTERNAL_SERVER_ERROR'
+                success: false,
+                message: 'Internal server error while fetching profile',
+                errorCode: 'INTERNAL_SERVER_ERROR',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
     }
@@ -212,6 +232,7 @@ export const updateStudentProfile = async (req, res) => {
         await student.save();
 
         res.json({
+            success: true,
             message: 'Profile updated successfully',
             student: {
                 id: student._id,
@@ -219,19 +240,24 @@ export const updateStudentProfile = async (req, res) => {
                 email: student.email,
                 councilName: student.councilName,
                 tenure: student.tenure,
-                bankDetails: student.bankDetails
+                bankDetails: student.bankDetails,
+                isVerified: student.isVerified
             }
         });
     } catch (error) {
+        console.error('Update profile error:', error);
         if (error instanceof StudentError) {
             res.status(error.statusCode).json({
+                success: false,
                 message: error.message,
                 errorCode: error.errorCode
             });
         } else {
             res.status(500).json({
-                message: 'Internal server error',
-                errorCode: 'INTERNAL_SERVER_ERROR'
+                success: false,
+                message: 'Internal server error while updating profile',
+                errorCode: 'INTERNAL_SERVER_ERROR',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
     }
@@ -278,7 +304,7 @@ export const changePassword = async (req, res) => {
             throw new StudentError('Student not found', 404, 'STUDENT_NOT_FOUND');
         }
 
-        // Check current password
+        // Check current password with bcrypt
         const isMatch = await bcrypt.compare(currentPassword, student.password);
         if (!isMatch) {
             throw new StudentError(
@@ -288,27 +314,32 @@ export const changePassword = async (req, res) => {
             );
         }
 
-        // Hash new password
-        const salt = await bcrypt.genSalt(10);
+        // Hash new password with higher salt rounds for better security
+        const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
         student.password = hashedPassword;
         await student.save();
 
         res.json({ 
+            success: true,
             message: 'Password changed successfully',
             status: 'SUCCESS'
         });
     } catch (error) {
+        console.error('Change password error:', error);
         if (error instanceof StudentError) {
             res.status(error.statusCode).json({
+                success: false,
                 message: error.message,
                 errorCode: error.errorCode
             });
         } else {
             res.status(500).json({
-                message: 'Internal server error',
-                errorCode: 'INTERNAL_SERVER_ERROR'
+                success: false,
+                message: 'Internal server error while changing password',
+                errorCode: 'INTERNAL_SERVER_ERROR',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
     }

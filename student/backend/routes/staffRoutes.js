@@ -4,7 +4,9 @@ import {
     loginStaff,
     getStaffProfile,
     updateStaffProfile,
-    changePassword
+    changePassword,
+    getAllStaff,
+    updateStaffVerification
 } from '../controllers/staffController.js';
 import { auth, checkRole } from '../middleware/auth.js';
 
@@ -16,12 +18,11 @@ router.post('/login', loginStaff);
 
 // Protected routes
 router.get('/profile', auth, getStaffProfile);
-router.put('/profile', auth, updateStaffProfile);
+router.patch('/profile', auth, updateStaffProfile);
 router.put('/change-password', auth, changePassword);
 
-// Role-specific routes
-router.get('/all', auth, checkRole(['principal', 'vice_principal']), async (req, res) => {
-    // Add logic to get all staff members
-});
+// Admin-only routes
+router.get('/all', auth, checkRole(['admin']), getAllStaff);
+router.put('/verify', auth, checkRole(['admin']), updateStaffVerification);
 
 export default router;
