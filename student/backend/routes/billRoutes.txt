@@ -1,0 +1,36 @@
+import express from 'express';
+import multer from 'multer';
+import {
+    uploadBill,
+    getBillsByDocument,
+    deleteBill,
+    updateBillStatus
+} from '../controllers/billController.js';
+import { protect } from '../middleware/authMiddleware.js';
+
+const router = express.Router();
+
+// Configure multer for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only JPG, PNG and PDF are allowed'));
+        }
+    }
+});
+
+// Routes
+router.post('/upload', protect, upload.single('bill'), uploadBill);
+router.get('/document/:documentId', protect, getBillsByDocument);
+router.delete('/:billId', protect, deleteBill);
+router.patch('/:billId/status', protect, updateBillStatus);
+
+export default router; 

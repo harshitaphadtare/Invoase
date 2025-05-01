@@ -1,0 +1,76 @@
+import mongoose from 'mongoose';
+
+const notificationSchema = new mongoose.Schema({
+    studentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Student',
+        required: [true, 'Student ID is required']
+    },
+    title: {
+        type: String,
+        required: [true, 'Title is required'],
+        trim: true,
+        maxlength: [100, 'Title cannot exceed 100 characters']
+    },
+    message: {
+        type: String,
+        required: [true, 'Message is required'],
+        trim: true,
+        maxlength: [500, 'Message cannot exceed 500 characters']
+    },
+    documentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Document'
+    },
+    type: {
+        type: String,
+        enum: {
+            values: ['document_status', 'system', 'other'],
+            message: '{VALUE} is not a valid notification type'
+        },
+        default: 'document_status'
+    },
+    isRead: {
+        type: Boolean,
+        default: false
+    },
+    priority: {
+        type: String,
+        enum: {
+            values: ['low', 'medium', 'high'],
+            message: '{VALUE} is not a valid priority level'
+        },
+        default: 'medium'
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+}, {
+    timestamps: true
+});
+
+// Create indexes for frequently queried fields
+notificationSchema.index({ studentId: 1, isRead: 1 });
+notificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 2592000 }); // TTL index for 30 days
+notificationSchema.index({ type: 1, priority: 1 });
+notificationSchema.index({ documentId: 1 });
+
+// Pre-save middleware to validate notification
+notificationSchema.pre('save', function(next) {
+    // If documentId is provided, type must be document_status
+    if (this.documentId && this.type !== 'document_status') {
+        this.type = 'document_status';
+    }
+    
+    // Set priority based on type
+    if (this.type === 'system') {
+        this.priority = 'high';
+    }
+    
+    next();
+});
+
+const Notification = mongoose.models.Notification || mongoose.model('Notification', notificationSchema);
+
+export default Notification; 

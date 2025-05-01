@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
     registerStaff,
     loginStaff,
@@ -7,22 +7,18 @@ import {
     changePassword,
     getAllStaff,
     updateStaffVerification
-} from '../controllers/staffController.js';
-import { auth, checkRole } from '../middleware/auth.js';
+} from "../controllers/staffController.js";
 
-const router = express.Router();
+const staffRouter = express.Router();
 
 // Public routes
-router.post('/register', registerStaff);
-router.post('/login', loginStaff);
+staffRouter.post("/signup", registerStaff);
+staffRouter.post("/login", loginStaff);
 
 // Protected routes
-router.get('/profile', auth, getStaffProfile);
-router.patch('/profile', auth, updateStaffProfile);
-router.put('/change-password', auth, changePassword);
+staffRouter.get("/profile",  getStaffProfile);
+staffRouter.patch("/profile",  updateStaffProfile);
+staffRouter.put("/change-password",  changePassword);
 
-// Admin-only routes
-router.get('/all', auth, checkRole(['admin']), getAllStaff);
-router.put('/verify', auth, checkRole(['admin']), updateStaffVerification);
 
-export default router;
+export default staffRouter;

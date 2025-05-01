@@ -12,6 +12,9 @@ const SponsorForm = () => {
     contactNumber: "",
     panCard: "",
     bankName: "",
+    eventName: "",
+    amount: "",
+    currency: "INR", // Default currency
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -31,6 +34,12 @@ const SponsorForm = () => {
           : "Please enter a valid PAN number (5 letters + 4 numbers + 1 letter)";
       case "bankName":
         return value.trim() ? "" : "Bank name is required";
+      case "eventName":
+        return value.trim() ? "" : "Event name is required";
+      case "amount":
+        return /^\d+(\.\d{1,2})?$/.test(value) && parseFloat(value) > 0
+          ? ""
+          : "Please enter a valid amount";
       default:
         return "";
     }
@@ -44,6 +53,16 @@ const SponsorForm = () => {
     // Format PAN card to uppercase
     if (name === "panCard") {
       formattedValue = value.toUpperCase();
+    }
+
+    // Format amount to allow only numbers and one decimal point
+    if (name === "amount") {
+      formattedValue = value.replace(/[^0-9.]/g, "");
+      // Ensure only one decimal point
+      const parts = formattedValue.split(".");
+      if (parts.length > 2) {
+        formattedValue = parts[0] + "." + parts.slice(1).join("");
+      }
     }
 
     setFormData((prev) => ({
@@ -217,10 +236,69 @@ const SponsorForm = () => {
           </div>
         </div>
 
-        {/* Step 2 */}
-        <h2 className="text-sm font-medium mb-3">
-          Step 2: Input Sponsor Details
-        </h2>
+        {/* Step 2: Event Details */}
+        <h2 className="text-sm font-medium mb-3 mt-8">Step 2: Event Details</h2>
+        <div className="bg-white rounded-lg p-6 mb-6">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Event Name
+            </label>
+            <input
+              type="text"
+              name="eventName"
+              value={formData.eventName}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 ${
+                errors.eventName && touched.eventName
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }`}
+              placeholder="Enter event name"
+            />
+            {errors.eventName && touched.eventName && (
+              <p className="text-red-500 text-xs mt-1">{errors.eventName}</p>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Amount Recieved
+            </label>
+            <div className="flex gap-2">
+              <select
+                name="currency"
+                value={formData.currency}
+                onChange={handleInputChange}
+                className="px-3 py-2 border border-gray-300 hover:cursor-pointer rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500"
+              >
+                <option value="INR">₹ (INR)</option>
+                <option value="USD">$ (USD)</option>
+                <option value="EUR">€ (EUR)</option>
+                <option value="GBP">£ (GBP)</option>
+              </select>
+              <input
+                type="text"
+                name="amount"
+                value={formData.amount}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 ${
+                  errors.amount && touched.amount
+                    ? "border-red-500"
+                    : "border-gray-300"
+                }`}
+                placeholder="Enter amount"
+              />
+            </div>
+            {errors.amount && touched.amount && (
+              <p className="text-red-500 text-xs mt-1">{errors.amount}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Step 3: Company Details */}
+        <h2 className="text-sm font-medium mb-3">Step 3: Company Details</h2>
         <div className="bg-white rounded-md border border-gray-200 p-4 sm:p-6 space-y-4 mb-6">
           <div className="space-y-2">
             <p className="text-gray-600 text-sm font-semibold">Company Name</p>

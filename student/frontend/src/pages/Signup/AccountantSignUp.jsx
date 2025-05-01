@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { assets } from "../../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
   FaUser,
   FaPhone,
@@ -9,14 +10,11 @@ import {
   FaLock,
   FaEye,
   FaEyeSlash,
-  FaCalendarAlt,
   FaHashtag,
 } from "react-icons/fa";
 
 const AccountantSignUp = () => {
   const navigate = useNavigate();
-
-  const [isLogin, setIsLogin] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -34,16 +32,50 @@ const AccountantSignUp = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    // Check for empty fields
+    for (const [key, value] of Object.entries(formData)) {
+      if (!value.trim()) {
+        toast.error(
+          `${key.charAt(0).toUpperCase() + key.slice(1)} is required`
+        );
+        return false;
+      }
+    }
+
+    // Validate email domain
+    if (!formData.email.toLowerCase().endsWith("@iitg.ac.in")) {
+      toast.error("Please use your IITG email address");
+      return false;
+    }
+
+    // Validate phone number (10 digits)
+    if (!/^\d{10}$/.test(formData.phone)) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return false;
+    }
+
+    // Validate password strength
+    if (formData.password.length < 8) {
+      toast.error("Password must be at least 8 characters long");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLogin) {
-      // Here you would typically make an API call to verify credentials
-      // For now, we'll just redirect to the accountant dashboard
-      navigate("/accountant/dashboard");
-    } else {
-      // Handle signup logic here
-      // After successful signup, you might want to redirect to login
-      setIsLogin(true);
+    if (!validateForm()) return;
+
+    try {
+      // Here you would make your API call to register the accountant
+      toast.success("Account created successfully!");
+      navigate("/login");
+    } catch (error) {
+      toast.error(
+        error.message || "Failed to create account. Please try again."
+      );
     }
   };
 
@@ -85,7 +117,7 @@ const AccountantSignUp = () => {
 
         {/* Title */}
         <h2 className="text-center text-2xl font-semibold text-white">
-          {isLogin ? "Login to your account" : "Create a new Account"}
+          Create a new Account
         </h2>
 
         {/* Form */}
@@ -94,47 +126,43 @@ const AccountantSignUp = () => {
           className="flex flex-col mx-5 items-center mt-6 space-y-2"
         >
           {/*name*/}
-          {!isLogin && (
-            <div className="relative w-full">
-              <FaUser className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
+          <div className="relative w-full">
+            <FaUser className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              placeholder="Enter full name"
+              className="w-full h-9 text-xs pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
+            />
+          </div>
+
+          {/*phone and department*/}
+          <div className="flex w-full gap-2">
+            <div className="relative w-2/4">
+              <FaPhone className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="phone"
+                value={formData.phone}
                 onChange={handleInputChange}
-                placeholder="Enter full name"
+                placeholder="Enter phone number"
                 className="w-full h-9 text-xs pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
               />
             </div>
-          )}
-
-          {/*tenure*/}
-          {!isLogin && (
-            <div className="flex w-full gap-2">
-              <div className="relative w-2/4">
-                <FaPhone className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
-                <input
-                  type="text"
-                  name="phoneNumber"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter phone number"
-                  className="w-full h-9 text-xs pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
-                />
-              </div>
-              <div className="relative w-2/4">
-                <FaHashtag className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
-                <input
-                  type="text"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  placeholder="Department"
-                  className="w-full text-xs h-9 pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
-                />
-              </div>
+            <div className="relative w-2/4">
+              <FaHashtag className="w-[10px] absolute left-4 top-3 text-[#9CA3AF]" />
+              <input
+                type="text"
+                name="department"
+                value={formData.department}
+                onChange={handleInputChange}
+                placeholder="Department"
+                className="w-full text-xs h-9 pl-9 rounded-lg border border-[#9CA3AF] bg-[#374859] p-3 text-white transition-all duration-200 focus:border-[#38A37F] focus:ring-1 focus:ring-[#38A37F] focus:outline-none"
+              />
             </div>
-          )}
+          </div>
 
           {/*email*/}
           <div className="relative w-full">
@@ -173,44 +201,24 @@ const AccountantSignUp = () => {
             </button>
           </div>
 
-          {/* Remember me & Forgot Password (Only for Login) */}
-          {isLogin && (
-            <div className="flex px-1 mt-1 mb-3 justify-between w-full text-xs font-medium text-[#9E9E9E]">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  className="appearance-none w-3 h-3 border-2 border-gray rounded-full bg-[#2C3E50] checked:bg-white cursor-pointer"
-                />
-                <span>Remember me?</span>
-              </label>
-              <a href="#" className="text-[#38A37F] hover:underline">
-                Forgot Password?
-              </a>
-            </div>
-          )}
-
           <button
             type="submit"
-            className="w-full mt-3 rounded-lg bg-[#38A37F] p-2 text-sm text-white transition-all duration-300 hover:bg-[#2C8565]  hover:font-semibold cursor-pointer"
+            className="w-full mt-3 rounded-lg bg-[#38A37F] p-2 text-sm text-white transition-all duration-300 hover:bg-[#2C8565] hover:font-semibold cursor-pointer"
           >
-            {isLogin ? "Log in" : "Create Account"}
+            Create Account
           </button>
+
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              setIsLogin(!isLogin);
-            }}
+            onClick={() => navigate("/accountant/login")}
             className="w-full rounded-lg border text-sm border-[#38A37F] p-2 text-[#38A37F] hover:bg-[#2C3E50] transition-all duration-400 cursor-pointer transition-all duration-400 hover:font-semibold"
           >
-            {isLogin ? "Create Account" : "Log in"}
+            Log in
           </button>
 
           <p className="text-center text-[#9CA3AF] text-xs">
-            Are you an Student?{" "}
+            Are you a Student?{" "}
             <a
-              onClick={() => {
-                navigate("/student/signup");
-              }}
+              onClick={() => navigate("/student/signup")}
               className="text-xs text-[#38A37F] cursor-pointer hover:underline"
             >
               Click here

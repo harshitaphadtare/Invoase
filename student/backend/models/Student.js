@@ -34,29 +34,6 @@ const studentSchema = new mongoose.Schema({
         enum: ['1st year', '2nd year', '3rd year', '4th year'],
         required: [true, 'Tenure is required']
     },
-    bankDetails: {
-        accountHolderName: {
-            type: String,
-            required: [true, 'Account holder name is required'],
-            trim: true
-        },
-        bankName: {
-            type: String,
-            required: [true, 'Bank name is required'],
-            trim: true
-        },
-        accountNumber: {
-            type: String,
-            required: [true, 'Account number is required'],
-            trim: true
-        },
-        ifscCode: {
-            type: String,
-            required: [true, 'IFSC code is required'],
-            trim: true,
-            match: [/^[A-Z]{4}[A-Z0-9]{7}$/, 'Please enter a valid IFSC code']
-        }
-    },
     isVerified: {
         type: Boolean,
         default: false

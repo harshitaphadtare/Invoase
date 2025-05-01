@@ -2,8 +2,8 @@ import Student from '../models/Student.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// Array of valid council codes
-const VALID_COUNCIL_CODES = ['SVU123', 'SVU567', 'SVU789'];
+// Valid council codes
+const VALID_COUNCIL_CODES = ['SUV-123', 'SUV-345', 'SUV-289'];
 
 // Custom error class for student-related errors
 class StudentError extends Error {
@@ -15,10 +15,20 @@ class StudentError extends Error {
     }
 }
 
+// Custom error class for validation errors
+class ValidationError extends Error {
+    constructor(message, statusCode, errorCode) {
+        super(message);
+        this.statusCode = statusCode;
+        this.errorCode = errorCode;
+        this.name = 'ValidationError';
+    }
+}
+
 // Register a new student
 export const registerStudent = async (req, res) => {
     try {
-        const { name, email, password, phoneNumber, councilName, councilCode, tenure, bankDetails } = req.body;
+        const { name, email, password, phoneNumber, councilName, councilCode, tenure } = req.body;
 
         // Validate required fields
         if (!name || !email || !password || !phoneNumber || !councilName || !councilCode || !tenure) {
@@ -31,6 +41,24 @@ export const registerStudent = async (req, res) => {
             throw new StudentError('Please enter a valid Somaiya email address', 400, 'INVALID_EMAIL');
         }
 
+        // Check if student already exists
+        const existingStudent = await Student.findOne({ 
+            $or: [
+                { email },
+                { phoneNumber },
+                { councilCode }
+            ]
+        });
+
+        if (existingStudent) {
+            if (existingStudent.email === email) {
+                throw new StudentError('An account with this email already exists. Please login instead.', 409, 'EMAIL_EXISTS');
+            }
+            if (existingStudent.phoneNumber === phoneNumber) {
+                throw new StudentError('This phone number is already registered', 409, 'PHONE_EXISTS');
+            }
+        }
+
         // Validate password strength
         if (password.length < 6) {
             throw new StudentError('Password must be at least 6 characters long', 400, 'WEAK_PASSWORD');
@@ -38,16 +66,10 @@ export const registerStudent = async (req, res) => {
 
         // Validate council code
         if (!VALID_COUNCIL_CODES.includes(councilCode)) {
-            throw new StudentError('Invalid council code', 400, 'INVALID_COUNCIL_CODE');
+            throw new StudentError('Invalid council code. Please use one of: SUV-123, SUV-345, SUV-289', 400, 'INVALID_COUNCIL_CODE');
         }
 
-        // Check if student already exists
-        const existingStudent = await Student.findOne({ email });
-        if (existingStudent) {
-            throw new StudentError('Student already exists with this email', 409, 'EMAIL_EXISTS');
-        }
-
-        // Hash password with higher salt rounds for better security
+        // Hash password
         const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -59,15 +81,14 @@ export const registerStudent = async (req, res) => {
             phoneNumber,
             councilName,
             councilCode,
-            tenure,
-            bankDetails
+            tenure
         });
 
         await student.save();
 
         // Create JWT token
         const token = jwt.sign(
-            { id: student._id, role: 'student' },
+            { id: student._id },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
@@ -87,20 +108,32 @@ export const registerStudent = async (req, res) => {
         });
     } catch (error) {
         console.error('Registration error:', error);
+        
+        // Handle known errors
         if (error instanceof StudentError) {
-            res.status(error.statusCode).json({
+            return res.status(error.statusCode).json({
                 success: false,
                 message: error.message,
                 errorCode: error.errorCode
             });
-        } else {
-            res.status(500).json({
+        }
+        
+        // Handle MongoDB duplicate key errors
+        if (error.code === 11000) {
+            const field = Object.keys(error.keyPattern)[0];
+            return res.status(409).json({
                 success: false,
-                message: 'Internal server error during registration',
-                errorCode: 'INTERNAL_SERVER_ERROR',
-                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+                message: `This ${field} is already registered. Please login instead.`,
+                errorCode: 'DUPLICATE_FIELD'
             });
         }
+
+        // Handle other errors
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error during registration',
+            errorCode: 'INTERNAL_SERVER_ERROR'
+        });
     }
 };
 
@@ -128,7 +161,7 @@ export const loginStudent = async (req, res) => {
 
         // Create JWT token
         const token = jwt.sign(
-            { id: student._id, role: 'student' },
+            { id: student._id },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
@@ -138,7 +171,7 @@ export const loginStudent = async (req, res) => {
             message: 'Login successful',
             token,
             student: {
-                id: student._id,
+                id: student._id, 
                 name: student.name,
                 email: student.email,
                 councilName: student.councilName,
@@ -168,11 +201,11 @@ export const loginStudent = async (req, res) => {
 // Get student profile
 export const getStudentProfile = async (req, res) => {
     try {
-        if (!req.user || !req.user.id) {
+        if (!req.student) {
             throw new StudentError('Authentication required', 401, 'UNAUTHORIZED');
         }
 
-        const student = await Student.findById(req.user.id).select('-password');
+        const student = await Student.findById(req.student._id).select('-password');
         if (!student) {
             throw new StudentError('Student not found', 404, 'STUDENT_NOT_FOUND');
         }
@@ -202,7 +235,7 @@ export const getStudentProfile = async (req, res) => {
 // Update student profile
 export const updateStudentProfile = async (req, res) => {
     try {
-        if (!req.user || !req.user.id) {
+        if (!req.student) {
             throw new StudentError('Authentication required', 401, 'UNAUTHORIZED');
         }
 
@@ -215,7 +248,7 @@ export const updateStudentProfile = async (req, res) => {
             );
         }
 
-        const student = await Student.findById(req.user.id);
+        const student = await Student.findById(req.student._id);
         if (!student) {
             throw new StudentError('Student not found', 404, 'STUDENT_NOT_FOUND');
         }
@@ -266,7 +299,7 @@ export const updateStudentProfile = async (req, res) => {
 // Change password
 export const changePassword = async (req, res) => {
     try {
-        if (!req.user || !req.user.id) {
+        if (!req.student) {
             throw new StudentError('Authentication required', 401, 'UNAUTHORIZED');
         }
 
@@ -299,7 +332,7 @@ export const changePassword = async (req, res) => {
             );
         }
 
-        const student = await Student.findById(req.user.id);
+        const student = await Student.findById(req.student._id);
         if (!student) {
             throw new StudentError('Student not found', 404, 'STUDENT_NOT_FOUND');
         }
@@ -342,6 +375,92 @@ export const changePassword = async (req, res) => {
                 error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
+    }
+};
+
+// Validate student registration
+export const validateStudent = async (req, res) => {
+    try {
+        const { name, email, phoneNumber, councilName, councilCode, tenure } = req.body;
+
+        // Check required fields
+        if (!name || !email || !phoneNumber || !councilName || !councilCode || !tenure) {
+            throw new ValidationError('All fields are required', 400, 'MISSING_FIELDS');
+        }
+
+        // Validate email format
+        const emailRegex = /^[a-zA-Z0-9._-]+@somaiya\.edu$/;
+        if (!emailRegex.test(email)) {
+            throw new ValidationError('Please enter a valid Somaiya email address', 400, 'INVALID_EMAIL');
+        }
+
+        // Check for existing user
+        const existingStudent = await Student.findOne({
+            $or: [
+                { email },
+                { phoneNumber },
+                { councilCode }
+            ]
+        });
+
+        if (existingStudent) {
+            if (existingStudent.email === email) {
+                throw new ValidationError('An account with this email already exists', 409, 'EMAIL_EXISTS');
+            }
+            if (existingStudent.phoneNumber === phoneNumber) {
+                throw new ValidationError('This phone number is already registered', 409, 'PHONE_EXISTS');
+            }
+            if (existingStudent.councilCode === councilCode) {
+                throw new ValidationError('This council code is already registered', 409, 'COUNCIL_CODE_EXISTS');
+            }
+        }
+
+        // Validate council code
+        if (!VALID_COUNCIL_CODES.includes(councilCode)) {
+            throw new ValidationError('Invalid council code. Please use one of: SUV-123, SUV-345, SUV-289', 400, 'INVALID_COUNCIL_CODE');
+        }
+
+        // Validate phone number format (10 digits)
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(phoneNumber)) {
+            throw new ValidationError('Please enter a valid 10-digit phone number', 400, 'INVALID_PHONE');
+        }
+
+        // Validate tenure format
+        const tenureRegex = /^[1-5](st|nd|rd|th) Year$/;
+        if (!tenureRegex.test(tenure)) {
+            throw new ValidationError('Please enter a valid tenure (e.g., "1st Year", "2nd Year")', 400, 'INVALID_TENURE');
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Validation successful'
+        });
+    } catch (error) {
+        console.error('Validation error:', error);
+        
+        if (error instanceof ValidationError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message,
+                errorCode: error.errorCode
+            });
+        }
+
+        if (error.code === 11000) {
+            const field = Object.keys(error.keyPattern)[0];
+            return res.status(409).json({
+                success: false,
+                message: `This ${field} is already registered`,
+                errorCode: 'DUPLICATE_FIELD'
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error during validation',
+            errorCode: 'INTERNAL_SERVER_ERROR'
+        });
     }
 };
 
