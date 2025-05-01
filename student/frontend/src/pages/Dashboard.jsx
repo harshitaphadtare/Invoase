@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { assets, initialNotifications, documents } from "../assets/assets";
+import { assets, initialNotifications } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { FiEye, FiEdit, FiArrowUp } from "react-icons/fi";
+import { donationService } from "../services/donationService";
+import { format } from "date-fns";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState(initialNotifications);
   const [showScrollButton, setShowScrollButton] = useState(false);
-
   const [filter, setFilter] = useState("all");
-
   const [statusFilter, setStatusFilter] = useState("all-status");
-
   const [searchQuery, setSearchQuery] = useState("");
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // stats section
   const [data, setData] = useState({
@@ -126,18 +128,49 @@ const Dashboard = () => {
     return true;
   });
 
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const fetchDocuments = async () => {
+    try {
+      setLoading(true);
+      const studentId = localStorage.getItem("studentId");
+      if (!studentId) {
+        throw new Error("Student ID not found");
+      }
+
+      const response = await donationService.getStudentDonations(studentId);
+      setDocuments(response.data);
+      setError(null);
+    } catch (err) {
+      setError(err.message || "Failed to fetch documents");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   //documents section
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch =
       searchQuery.trim() === "" ||
-      doc.documentID.toLowerCase().includes(searchQuery.toLowerCase());
+      doc.documentId.toLowerCase().includes(searchQuery.toLowerCase());
 
     const statusMatches =
       statusFilter === "all-status" ||
-      doc.Status.toLowerCase() === statusFilter.toLowerCase();
+      doc.staffStatus.toLowerCase() === statusFilter.toLowerCase();
 
     return matchesSearch && statusMatches;
   });
+
+  // Helper to get document type
+  const getDocumentType = (doc) => {
+    // If you add GST or Reimbursement docs, update this logic
+    if (doc.donationDetails) return "Donation";
+    if (doc.gstDetails) return "GST Invoice";
+    if (doc.reimbursementDetails) return "Reimbursement";
+    return "Unknown";
+  };
 
   const getStatusBadgeClasses = (status) => {
     switch (status.toLowerCase()) {
@@ -151,6 +184,26 @@ const Dashboard = () => {
         return "bg-gray-100 text-gray-800 px-2 py-[2px] rounded-full text-xs font-medium";
     }
   };
+
+  // Format date to "Jan 15, 2024 2:30pm" format
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const formatted = format(date, "MMM d, yyyy h:mma");
+    // Split into parts to handle capitalization correctly
+    const [month, ...rest] = formatted.split(" ");
+    return [
+      month.charAt(0).toUpperCase() + month.slice(1).toLowerCase(),
+      ...rest,
+    ]
+      .join(" ")
+      .toLowerCase()
+      .replace(/^[a-z]/, (c) => c.toUpperCase());
+  };
+
+  // Sort documents by updatedAt in descending order (most recent first)
+  const sortedDocuments = [...filteredDocuments].sort((a, b) => {
+    return new Date(b.updatedAt) - new Date(a.updatedAt);
+  });
 
   return (
     <div className="h-auto bg-[#F6F6F6] px-4 sm:p-10">
@@ -358,7 +411,7 @@ const Dashboard = () => {
                   </div>
                   <input
                     type="text"
-                    placeholder="e.g.DOC-001"
+                    placeholder="Search by Document ID"
                     className="w-full p-2 focus:outline-none focus:ring-0 text-sm"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -381,19 +434,22 @@ const Dashboard = () => {
                   Event Name
                 </th>
                 <th className="py-3 px-6 whitespace-nowrap font-semibold">
-                  Event Date
+                  Company
+                </th>
+                <th className="py-3 px-6 whitespace-nowrap font-semibold">
+                  Amount
                 </th>
                 <th className="py-3 px-6 whitespace-nowrap font-semibold">
                   Type
                 </th>
                 <th className="py-3 px-6 whitespace-nowrap font-semibold">
-                  Current Stage
+                  Staff Type
                 </th>
                 <th className="py-3 px-6 whitespace-nowrap font-semibold">
                   Status
                 </th>
                 <th className="py-3 px-6 whitespace-nowrap font-semibold">
-                  last Updated
+                  Last Updated
                 </th>
                 <th className="py-3 px-6 whitespace-nowrap font-semibold">
                   Action
@@ -401,42 +457,81 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredDocuments.length > 0 ? (
-                filteredDocuments.slice(-10).map((row) => (
+              {loading ? (
+                <tr>
+                  <td colSpan="9" className="text-center py-4">
+                    <div className="text-gray-600">Loading...</div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="9" className="text-center py-4">
+                    <div className="text-red-600">{error}</div>
+                  </td>
+                </tr>
+              ) : sortedDocuments.length > 0 ? (
+                sortedDocuments.slice(-10).map((doc) => (
                   <tr
-                    key={row.documentID}
+                    key={doc._id}
                     className="border-b border-gray-200 hover:bg-gray-50 text-sm"
                   >
                     <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
-                      {row.documentID}
+                      {doc.documentId}
                     </td>
                     <td className="py-4 px-6 text-black-800 whitespace-nowrap">
-                      {row.eventName}
+                      {doc.donationDetails?.eventName ||
+                        doc.gstDetails?.invoiceName ||
+                        doc.reimbursementDetails?.purpose ||
+                        "-"}
                     </td>
                     <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
-                      {row.eventDate}
+                      {doc.donationDetails?.companyName ||
+                        doc.gstDetails?.companyName ||
+                        doc.reimbursementDetails?.companyName ||
+                        "-"}
                     </td>
                     <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
-                      {row.type}
+                      ₹
+                      {doc.donationDetails?.amount ||
+                        doc.gstDetails?.amount ||
+                        doc.reimbursementDetails?.amount ||
+                        "-"}
                     </td>
                     <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
-                      {row.stage}
+                      {getDocumentType(doc)}
+                    </td>
+                    <td className="py-4 px-6 text-gray-500 whitespace-nowrap capitalize">
+                      {doc.staffType}
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <span className={getStatusBadgeClasses(row.Status)}>
-                        {row.Status}
+                      <span className={getStatusBadgeClasses(doc.staffStatus)}>
+                        {doc.staffStatus}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
-                      {row.lastUpdated}
+                      {formatDate(doc.updatedAt)}
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
-                      {row.Status.toLowerCase() === "rejected" ? (
-                        <button className="flex items-center gap-2 text-blue-600 hover:underline hover:cursor-pointer">
+                      {doc.staffStatus.toLowerCase() === "rejected" ? (
+                        <button
+                          onClick={() =>
+                            navigate(
+                              `/sponsor/donation-form/edit/${doc.documentId}`
+                            )
+                          }
+                          className="flex items-center gap-2 text-blue-600 hover:underline hover:cursor-pointer"
+                        >
                           <FiEdit /> Edit
                         </button>
                       ) : (
-                        <button className="flex items-center gap-2 text-green-600 hover:underline hover:cursor-pointer">
+                        <button
+                          onClick={() =>
+                            navigate(
+                              `/sponsor/donation-form/view/${doc.documentId}`
+                            )
+                          }
+                          className="flex items-center gap-2 text-green-600 hover:underline hover:cursor-pointer"
+                        >
                           <FiEye /> View
                         </button>
                       )}
@@ -446,7 +541,7 @@ const Dashboard = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="8"
+                    colSpan="9"
                     className="text-center text-sm py-4 text-gray-500"
                   >
                     No documents found matching your criteria.
@@ -458,7 +553,11 @@ const Dashboard = () => {
         </div>
       </div>
       <div className="flex pb-3 justify-between items-center mt-4">
-        <p className="text-sm text-gray-500">Showing 1 to 10 of 100 results </p>
+        <p className="text-sm text-gray-500">
+          Showing {sortedDocuments.length > 0 ? 1 : 0} to{" "}
+          {Math.min(sortedDocuments.length, 10)} of {sortedDocuments.length}{" "}
+          results
+        </p>
         <button
           onClick={() => navigate("/requests")}
           className="bg-[#2C3E50] rounded px-4 text-white hover:bg-[#1F2B38] py-2 text-sm hover:cursor-pointer"

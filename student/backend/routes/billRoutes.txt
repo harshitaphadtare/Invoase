@@ -6,7 +6,7 @@ import {
     deleteBill,
     updateBillStatus
 } from '../controllers/billController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { authStudent } from '../middleware/AuthStudent.js';
 
 const router = express.Router();
 
@@ -28,9 +28,9 @@ const upload = multer({
 });
 
 // Routes
-router.post('/upload', protect, upload.single('bill'), uploadBill);
-router.get('/document/:documentId', protect, getBillsByDocument);
-router.delete('/:billId', protect, deleteBill);
-router.patch('/:billId/status', protect, updateBillStatus);
+router.post('/upload', authStudent, upload.single('bill'), uploadBill);
+router.get('/document/:documentId', authStudent, getBillsByDocument);
+router.delete('/:billId', authStudent, deleteBill);
+router.patch('/:billId/status', authStudent, updateBillStatus);
 
 export default router; 

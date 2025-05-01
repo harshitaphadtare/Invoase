@@ -69,11 +69,15 @@ export default function Login() {
         password: formData.password,
       });
 
-      const { token, message } = response.data;
+      const { token, message, student } = response.data;
 
       if (token) {
         if (isStudentLogin) {
           setStudentToken(token); // Context will handle localStorage
+          localStorage.setItem("token", token);
+          if (student && student.id) {
+            localStorage.setItem("studentId", student.id);
+          }
         } else {
           // Handle accountant token (you'll need to implement AccountantContext similarly)
           localStorage.setItem("accountantToken", token);

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FiCheckCircle,
   FiClock,
@@ -6,18 +6,106 @@ import {
   FiSend,
   FiFileText,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { donationService } from "../../services/donationService";
 
 const DonationView = () => {
-  const handleViewDocument = () => {
-    // Logic to view the document
-    alert("Viewing document: donation_document.pdf");
-  };
+  const [documentData, setDocumentData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { donationId } = useParams();
+
+  // Load data from navigation state or localStorage
+  useEffect(() => {
+    const fetchDonationData = async () => {
+      try {
+        setLoading(true);
+        if (donationId) {
+          const response = await donationService.getDonationById(donationId);
+          setDocumentData(response.data);
+        } else if (location.state?.formData) {
+          setDocumentData(location.state.formData);
+        } else {
+          // Try to load from localStorage
+          const saved = localStorage.getItem("pendingDonationForm");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setDocumentData(parsed.formData);
+          }
+        }
+        setError(null);
+      } catch (err) {
+        setError(err.message || "Failed to fetch donation data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDonationData();
+  }, [donationId, location.state]);
+
+  const handleViewDocument = () => {
+    if (documentData?.documentUrl) {
+      window.open(documentData.documentUrl, "_blank");
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Send Document: actually create the document in the backend
+  const handleSendDocument = async () => {
+    setSubmitting(true);
+    try {
+      const studentId = localStorage.getItem("studentId");
+      if (!studentId)
+        throw new Error("Student ID not found. Please login again.");
+      // Get file from navigation state or localStorage (not storable in localStorage, so must be in state)
+      const file = location.state?.uploadedFile;
+      if (!file) throw new Error("File not found. Please re-upload.");
+      const submitData = {
+        studentId,
+        file,
+        ...documentData,
+      };
+      const response = await donationService.createDonation(submitData);
+      // Clear saved form data
+      localStorage.removeItem("pendingDonationForm");
+      // Navigate to success page
+      navigate("/sponsor/donation-form/success", {
+        state: { formData: response.data },
+      });
+    } catch (err) {
+      setError(err.message || "Failed to submit document");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const file = location.state?.uploadedFile;
+  let fileUrl = null;
+  if (file instanceof File) {
+    fileUrl = URL.createObjectURL(file);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[600px] bg-[#F6F6F6]">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[600px] bg-[#F6F6F6]">
+        <div className="text-red-600">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center min-h-[600px] items-center bg-[#F6F6F6] px-6 py-7">
@@ -29,76 +117,84 @@ const DonationView = () => {
               Donation Document Review
             </h1>
             <p className="text-[10px] text-gray-500 order-first sm:order-last">
-              January 15, 2024 10:30 AM
+              {new Date().toLocaleString()}
             </p>
           </div>
 
           {/* Info Grid */}
           <div className="grid border border-gray-200 rounded-lg p-3 grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-[10px] sm:text-xs text-gray-500 mb-3">
             <div className="space-y-0.5">
-              <p className="font-medium">Type of Payment-Donation</p>
+              <p className="font-medium">Type of Payment</p>
               <p className="text-gray-900 font-medium">Donation</p>
             </div>
             <div className="space-y-0.5">
               <p className="font-medium">Company Name</p>
-              <p className="text-gray-900 font-medium">Tech Solutions Inc.</p>
+              <p className="text-gray-900 font-medium">
+                {documentData?.companyName || "N/A"}
+              </p>
             </div>
             <div className="space-y-0.5">
               <p className="font-medium">Contact Number</p>
-              <p className="text-gray-900 font-medium">+1 (555) 123-4567</p>
+              <p className="text-gray-900 font-medium">
+                {documentData?.contactNumber || "N/A"}
+              </p>
             </div>
             <div className="space-y-0.5">
               <p className="font-medium">PAN Card</p>
-              <p className="text-gray-900 font-medium">ABCDE1234F</p>
+              <p className="text-gray-900 font-medium">
+                {documentData?.panCard || "N/A"}
+              </p>
             </div>
             <div className="space-y-0.5">
               <p className="font-medium">Bank Name</p>
-              <p className="text-gray-900 font-medium">Global Bank Ltd.</p>
+              <p className="text-gray-900 font-medium">
+                {documentData?.bankName || "N/A"}
+              </p>
             </div>
           </div>
 
           {/* Document Box */}
-          <div className="mb-3">
-            <p className="text-[10px] sm:text-xs font-medium mb-1 text-gray-500">
-              Relevant Document
-            </p>
-            <div className="border border-dashed border-gray-300 p-2 sm:p-3 rounded-lg flex items-center justify-center flex-col bg-gray-100">
-              <FiFileText className="text-gray-500 w-4 h-4 sm:w-5 sm:h-5" />
-              <p className="text-gray-600 text-[10px] sm:text-xs mt-1">
-                donation_document.pdf
-              </p>
-              <button
-                onClick={handleViewDocument}
-                className="mt-1 text-[10px] sm:text-xs text-blue-800 hover:underline hover:cursor-pointer"
+          <div className="border border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center mb-4">
+            <FiFileText className="text-2xl text-gray-400 mb-2" />
+            <p className="text-xs text-gray-500 mb-1">Uploaded Document</p>
+            {fileUrl ? (
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-600 underline hover:cursor-pointer"
               >
                 View Document
-              </button>
-            </div>
+              </a>
+            ) : documentData?.documentUrl ? (
+              <span
+                className="text-xs text-blue-600 underline hover:cursor-pointer"
+                onClick={handleViewDocument}
+              >
+                View Document
+              </span>
+            ) : (
+              <span className="text-xs text-gray-400">
+                No document uploaded
+              </span>
+            )}
           </div>
 
-          {/* Approvals */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 border-b border-gray-200 pb-3">
-            <div className="flex items-center gap-1 p-2 sm:p-3 bg-green-100 border border-green-300 rounded">
-              <FiCheckCircle className="text-green-600 w-3 h-3" />
-              <span className="text-[10px] sm:text-xs font-medium text-green-700">
-                Finance Head Approval
-              </span>
-            </div>
-            <div className="flex items-center gap-1 p-2 sm:p-3 bg-gray-100 border border-gray-300 rounded">
-              <FiClock className="text-gray-600 w-3 h-3" />
-              <span className="text-[10px] sm:text-xs font-medium text-gray-700">
-                Accountant Approval
-              </span>
-              <span className="text-[8px] sm:text-[10px] text-gray-500 ml-auto">
-                (Pending approval)
-              </span>
-            </div>
-          </div>
-
-          {/* Footer Buttons */}
-          <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-0">
+          {/* Approval Steps (static for now) */}
+          <div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
             <button
               onClick={() => {
+                // Remove uploaded file info from localStorage
+                const saved = localStorage.getItem("pendingDonationForm");
+                if (saved) {
+                  const parsed = JSON.parse(saved);
+                  // Remove uploadedFile property
+                  delete parsed.uploadedFile;
+                  localStorage.setItem(
+                    "pendingDonationForm",
+                    JSON.stringify(parsed)
+                  );
+                }
                 navigate("/sponsor/donation-form");
               }}
               className="flex hover:cursor-pointer items-center justify-center sm:justify-start gap-1 text-[10px] sm:text-xs px-3 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors w-full sm:w-auto"
@@ -107,10 +203,11 @@ const DonationView = () => {
               Back to Form
             </button>
             <button
-              onClick={() => navigate("/sponsor/donation-form/success")}
-              className="flex hover:cursor-pointer items-center justify-center sm:justify-start gap-1 text-[10px] sm:text-xs px-3 py-2 bg-[#2C3E50] text-white rounded hover:bg-gray-800 transition-colors w-full sm:w-auto"
+              onClick={handleSendDocument}
+              disabled={submitting}
+              className="flex hover:cursor-pointer items-center justify-center sm:justify-start gap-1 text-[10px] sm:text-xs px-3 py-2 bg-[#2C3E50] text-white rounded hover:bg-gray-800 transition-colors w-full sm:w-auto disabled:opacity-50"
             >
-              Send Document
+              {submitting ? "Sending..." : "Send Document"}
               <FiSend className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             </button>
           </div>

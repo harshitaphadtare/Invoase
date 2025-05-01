@@ -1,15 +1,30 @@
-import { cloudinary } from '../config/cloudinary.js';
+import { v2 as cloudinary } from 'cloudinary';
+import connectCloudinary from '../config/cloudinary.js';
 
-const uploadFile = async (filePath, publicId) => {
+// Initialize Cloudinary configuration
+connectCloudinary();
+
+const uploadToCloudinary = async (file) => {
   try {
-    const result = await cloudinary.uploader.upload(filePath, {
-      resource_type: 'raw',
-      public_id: publicId,
+    if (!file || !file.buffer) {
+      throw new Error('No file or file buffer provided');
+    }
+
+    // Convert buffer to base64
+    const b64 = Buffer.from(file.buffer).toString('base64');
+    let dataURI = "data:" + file.mimetype + ";base64," + b64;
+    
+    const result = await cloudinary.uploader.upload(dataURI, {
+      resource_type: 'auto',
+      folder: 'documents',
+      allowed_formats: ['pdf', 'doc', 'docx'],
     });
-    return result;
+    
+    return result.secure_url;
   } catch (error) {
-    throw error;
+    console.error('Cloudinary upload error:', error);
+    throw new Error('Failed to upload file to Cloudinary: ' + error.message);
   }
 };
 
-export default uploadFile;
+export { uploadToCloudinary };

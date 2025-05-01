@@ -18,12 +18,13 @@ import Request from "./pages/Request";
 import Footer from "./components/Footer";
 import DonationReviewPage from "./pages/Donation/DonationView";
 import GstFormView from "./pages/Gst/GstView";
-import DonationSuccess from "./components/DonationSuccess";
+import DocSubmissionSuccess from "./components/DocSubmissionSuccess";
 import ReimburseView from "./pages/Reimburse/ReimburseView";
 import StudentBankDetails from "./pages/Signup/StudentBankDetails";
 import AccountantSignUp from "./pages/Signup/AccountantSignUp";
 import Profile from "./pages/Profile";
 import BankDetails from "./pages/BankDetails";
+import ViewOnly from "./components/ViewOnly";
 
 const App = () => {
   const location = useLocation();
@@ -129,19 +130,27 @@ const App = () => {
             path="/sponsor/gst-form/view"
             element={checkAuth(<GstFormView />)}
           />
+          <Route
+            path="/sponsor/donation-form/view/:donationId"
+            element={<ViewOnly />}
+          />
+          <Route
+            path="/sponsor/donation-form/edit/:documentId"
+            element={checkAuth(<DonationForm />)}
+          />
 
           {/* Success Routes */}
           <Route
             path="/sponsor/donation-form/success"
-            element={checkAuth(<DonationSuccess />)}
+            element={checkAuth(<DocSubmissionSuccess />)}
           />
           <Route
             path="/sponsor/gst-form/success"
-            element={checkAuth(<DonationSuccess />)}
+            element={checkAuth(<DocSubmissionSuccess />)}
           />
           <Route
             path="/reimburse/success"
-            element={checkAuth(<DonationSuccess />)}
+            element={checkAuth(<DocSubmissionSuccess />)}
           />
         </Routes>
       </main>

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { assets } from "../assets/assets";
 import { FiFileText, FiBell, FiMail } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
+import { format } from "date-fns";
 
 const DonationSuccess = () => {
   useEffect(() => {
@@ -14,6 +15,24 @@ const DonationSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isGstForm = location.pathname.includes("gst-form");
+
+  // Get submission details from location state with fallback values
+  const submissionDate = location.state?.submissionDate || new Date();
+  const documentId =
+    location.state?.documentId || "DOC-" + format(new Date(), "yyyyMMddHHmm");
+
+  // Format date to match the dashboard format
+  const formatDate = (date) => {
+    const formatted = format(new Date(date), "MMM d, yyyy h:mma");
+    const [month, ...rest] = formatted.split(" ");
+    return [
+      month.charAt(0).toUpperCase() + month.slice(1).toLowerCase(),
+      ...rest,
+    ]
+      .join(" ")
+      .toLowerCase()
+      .replace(/^[a-z]/, (c) => c.toUpperCase());
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -43,16 +62,14 @@ const DonationSuccess = () => {
                 Submission Time
               </p>
               <p className="text-xs sm:text-sm font-semibold">
-                March 15, 2024 14:30 GMT
+                {formatDate(submissionDate)} GMT
               </p>
             </div>
             <div>
               <p className="text-[10px] sm:text-xs text-gray-500">
                 Reference Number
               </p>
-              <p className="text-xs sm:text-sm font-semibold">
-                #REF-2024-03150089
-              </p>
+              <p className="text-xs sm:text-sm font-semibold">#{documentId}</p>
             </div>
           </div>
         </div>
@@ -99,7 +116,7 @@ const DonationSuccess = () => {
               <div className="ml-2">
                 <span className="font-semibold text-gray-700">Submitted</span>
                 <span className="block text-[9px] sm:text-[10px] text-gray-500">
-                  March 15, 2024 14:30 GMT
+                  {formatDate(submissionDate)} GMT
                 </span>
               </div>
             </div>

@@ -6,7 +6,7 @@ import connectCloudinary from "./config/cloudinary.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import staffRoutes from "./routes/staffRoutes.js";
 import bankDetailsRoutes from "./routes/bankDetailsRoutes.js";  
-import uploadRoute from "./routes/documentRoute.js";
+import documentRoutes from "./routes/documentRoute.js";
 // Initialize Express app
 const app = express();
 const port = process.env.PORT || 5000;
@@ -27,7 +27,7 @@ app.get("/", (req, res) => {
 app.use("/api/student", studentRoutes);
 app.use("/api/staff", staffRoutes);
 app.use("/api/bank-details", bankDetailsRoutes);
-app.use('/api/upload', uploadRoute);
+app.use('/api/documents', documentRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
