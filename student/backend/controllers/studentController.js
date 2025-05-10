@@ -66,7 +66,7 @@ export const registerStudent = async (req, res) => {
 
         // Validate council code
         if (!VALID_COUNCIL_CODES.includes(councilCode)) {
-            throw new StudentError('Invalid council code. Please use one of: SUV-123, SUV-345, SUV-289', 400, 'INVALID_COUNCIL_CODE');
+            throw new StudentError('Invalid council code.', 400, 'INVALID_COUNCIL_CODE');
         }
 
         // Hash password
