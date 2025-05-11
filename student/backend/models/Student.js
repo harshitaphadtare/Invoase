@@ -31,7 +31,7 @@ const studentSchema = new mongoose.Schema({
     },
     tenure: {
         type: String,
-        enum: ['1st year', '2nd year', '3rd year', '4th year'],
+        enum: ['1st Year', '2nd Year', '3rd Year', '4th Year'],
         required: [true, 'Tenure is required']
     },
     isVerified: {

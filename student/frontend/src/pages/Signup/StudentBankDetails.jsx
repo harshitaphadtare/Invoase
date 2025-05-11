@@ -17,7 +17,7 @@ export default function BankDetailsForm() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "ifscCode" ? value.toUpperCase() : value,
     }));
   };
 
@@ -26,19 +26,40 @@ export default function BankDetailsForm() {
       toast.error("Account holder name is required");
       return false;
     }
+    if (!/^[a-zA-Z\s]{2,50}$/.test(formData.accountHolderName.trim())) {
+      toast.error(
+        "Please enter a valid account holder name (2-50 letters and spaces)"
+      );
+      return false;
+    }
     if (!formData.bankName.trim()) {
       toast.error("Bank name is required");
+      return false;
+    }
+    if (!/^[a-zA-Z\s]{2,50}$/.test(formData.bankName.trim())) {
+      toast.error("Please enter a valid bank name (2-50 letters and spaces)");
       return false;
     }
     if (!formData.accountNumber.trim()) {
       toast.error("Account number is required");
       return false;
     }
+    if (
+      formData.accountNumber.trim().length < 8 ||
+      formData.accountNumber.trim().length > 20
+    ) {
+      toast.error("Account number must be between 8 and 20 digits");
+      return false;
+    }
+    if (!/^[0-9]+$/.test(formData.accountNumber.trim())) {
+      toast.error("Account number must contain only digits");
+      return false;
+    }
     if (!formData.ifscCode.trim()) {
       toast.error("IFSC code is required");
       return false;
     }
-    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode)) {
+    if (!/^[A-Z]{4}[A-Z0-9]{7}$/.test(formData.ifscCode.trim())) {
       toast.error("Please enter a valid IFSC code");
       return false;
     }
@@ -62,16 +83,19 @@ export default function BankDetailsForm() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/bank-details", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          studentId,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/bank-details`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...formData,
+            studentId,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -83,7 +107,7 @@ export default function BankDetailsForm() {
       toast.success("Bank details saved successfully!");
       // Clear studentId from localStorage as it's no longer needed
       localStorage.removeItem("studentId");
-      navigate("/student/dashboard");
+      navigate("/dashboard");
     } catch (error) {
       toast.error("Failed to save bank details. Please try again.");
     }

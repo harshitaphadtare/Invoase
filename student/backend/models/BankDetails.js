@@ -32,12 +32,7 @@ const bankDetailsSchema = new mongoose.Schema({
         trim: true,
         match: [/^[a-zA-Z\s]{2,50}$/, 'Please enter a valid bank name']
     },
-    branchName: {
-        type: String,
-        required: [true, 'Branch name is required'],
-        trim: true,
-        match: [/^[a-zA-Z\s]{2,50}$/, 'Please enter a valid branch name']
-    },
+    
     isActive: {
         type: Boolean,
         default: true

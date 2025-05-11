@@ -75,8 +75,8 @@ export default function Login() {
         if (isStudentLogin) {
           setStudentToken(token); // Context will handle localStorage
           localStorage.setItem("token", token);
-          if (student && student.id) {
-            localStorage.setItem("studentId", student.id);
+          if (student && (student.id || student._id)) {
+            localStorage.setItem("studentId", student.id || student._id);
           }
         } else {
           // Handle accountant token (you'll need to implement AccountantContext similarly)

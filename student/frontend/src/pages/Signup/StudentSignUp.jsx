@@ -63,8 +63,12 @@ export default function SignupForm() {
     }
 
     // Validate password strength
-    if (formData.password.length < 8) {
-      toast.error("Password must be at least 8 characters long");
+    const strongPasswordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!strongPasswordRegex.test(formData.password)) {
+      toast.error(
+        "Password must be at least 8 characters, include uppercase, lowercase, number, and special character."
+      );
       return false;
     }
 
@@ -81,7 +85,7 @@ export default function SignupForm() {
     try {
       // Make API call to register student
       const response = await fetch(
-        "http://localhost:5000/api/student/register",
+        `${import.meta.env.VITE_BACKEND_URL}/api/student/register`,
         {
           method: "POST",
           headers: {
@@ -99,7 +103,7 @@ export default function SignupForm() {
       }
 
       // Store the student ID for bank details
-      localStorage.setItem("studentId", data.studentId);
+      localStorage.setItem("studentId", data.student.id);
       toast.success("Registration successful! Please enter your bank details.");
       navigate("/student/bank-details");
     } catch (error) {

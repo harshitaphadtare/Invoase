@@ -140,7 +140,12 @@ const Dashboard = () => {
         throw new Error("Student ID not found");
       }
 
-      const response = await donationService.getStudentDonations(studentId);
+      const token = localStorage.getItem("studentToken");
+      const response = await donationService.getStudentDonations(studentId, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setDocuments(response.data);
       setError(null);
     } catch (err) {
@@ -204,6 +209,12 @@ const Dashboard = () => {
   const sortedDocuments = [...filteredDocuments].sort((a, b) => {
     return new Date(b.updatedAt) - new Date(a.updatedAt);
   });
+
+  // const handleLogout = () => {
+  //   localStorage.removeItem("studentId");
+  //   localStorage.removeItem("studentToken");
+  //   navigate("/student/login");
+  // };
 
   return (
     <div className="h-auto bg-[#F6F6F6] px-4 sm:p-10">
@@ -544,7 +555,7 @@ const Dashboard = () => {
                     colSpan="9"
                     className="text-center text-sm py-4 text-gray-500"
                   >
-                    No documents found matching your criteria.
+                    No documents added yet.
                   </td>
                 </tr>
               )}

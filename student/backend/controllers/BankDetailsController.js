@@ -7,12 +7,11 @@ export const saveBankDetails = async (req, res) => {
             accountNumber, 
             ifscCode, 
             accountHolderName,
-            branchName,
             studentId 
         } = req.body;
 
         // Check if all required fields are present
-        if (!bankName || !accountNumber || !ifscCode || !accountHolderName || !branchName || !studentId) {
+        if (!bankName || !accountNumber || !ifscCode || !accountHolderName || !studentId) {
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required'
@@ -25,7 +24,6 @@ export const saveBankDetails = async (req, res) => {
             accountNumber,
             ifscCode,
             accountHolderName,
-            branchName,
             isActive: true
         });
 
