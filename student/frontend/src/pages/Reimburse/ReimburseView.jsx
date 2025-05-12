@@ -1,83 +1,111 @@
 import React, { useState, useEffect } from "react";
 import { FiArrowLeft, FiDownload, FiCheck } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { reimbService } from "../../services/reimbServices";
+import { toast } from "react-toastify";
 
 const ReimburseView = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [documentData, setDocumentData] = useState(null);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "instant",
-      });
-    }, 0);
+    const fetchDocument = async () => {
+      try {
+        const documentId = location.state?.documentId;
+        if (!documentId) {
+          navigate("/reimburse");
+          return;
+        }
 
-    return () => clearTimeout(timeoutId);
-  }, []);
+        const response = await reimbService.getReimbDocumentById(documentId);
+        if (response.success) {
+          setDocumentData(response.data);
+        } else {
+          throw new Error("Failed to fetch document");
+        }
+      } catch (err) {
+        setError(err.message || "Failed to fetch document");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Mock data - In a real app, this would come from your API/backend
-  const documentData = {
-    eventDetails: {
-      eventName: "Annual Tech Conference 2024",
-      eventDate: "March 15, 2024",
-      councilName: "Technology Council",
-      documentId: "REIMB-2024-001",
-    },
-    billSummary: [
-      {
-        id: 1,
-        description: "Venue Booking",
-        billDate: "Mar 15, 2024",
-        amount: 2300.0,
-        receipt: "venue_receipt.pdf",
-      },
-      {
-        id: 2,
-        description: "Catering Services",
-        billDate: "Mar 15, 2024",
-        amount: 2000.0,
-        receipt: "catering_receipt.pdf",
-      },
-    ],
-    totalAmount: 4300.0,
-    status: "Pending Review",
-    generatedOn: "March 15, 2024",
-    approvalStatus: {
-      documentGenerated: true,
-      facultyApproval: false,
-      vpApproval: false,
-      principalApproval: false,
-    },
-  };
+    fetchDocument();
+  }, [location.state?.documentId, navigate]);
 
-  const handleViewReceipt = (receipt) => {
+  const handleViewReceipt = async (fileUrl) => {
     try {
-      // In a real app, this would open/download the receipt file
-      console.log("Viewing receipt:", receipt);
+      window.open(fileUrl, "_blank");
     } catch (err) {
       setError("Unable to view receipt. Please try again later.");
     }
   };
 
-  const handleDownloadPDF = () => {
+  const formatDate = (isoString) => {
+    const options = { year: "numeric", month: "short", day: "2-digit" };
+    return new Date(isoString).toLocaleDateString("en-GB", options);
+  };
+
+  const handleDownloadPDF = async () => {
     try {
-      // In a real app, this would trigger the PDF download
-      console.log("Downloading PDF...");
+      // Implement PDF download functionality
+      toast.info("PDF download functionality coming soon!");
     } catch (err) {
       setError("Unable to download PDF. Please try again later.");
     }
   };
 
-  const handleSubmitForApproval = () => {
+  const handleSubmitForApproval = async () => {
     try {
-      // In a real app, this would submit the document for approval
-      console.log("Submitting for approval...");
+      const response = await reimbService.updateReimbDocument(
+        documentData.documentId,
+        {
+          staffStatus: "pending",
+        }
+      );
+
+      if (response.success) {
+        toast.success("Document submitted for approval successfully!");
+        navigate("/reimburse/success");
+      } else {
+        throw new Error("Failed to submit document for approval");
+      }
     } catch (err) {
-      setError("Unable to submit for approval. Please try again later.");
+      setError(
+        err.message || "Unable to submit for approval. Please try again later."
+      );
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading document...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!documentData) {
+    return (
+      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500">Document not found</p>
+          <button
+            onClick={() => navigate("/reimburse")}
+            className="mt-4 text-blue-600 hover:underline"
+          >
+            Return to Form
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] p-4 md:p-6">
@@ -127,7 +155,7 @@ const ReimburseView = () => {
                     />
                   </svg>
                   <p className="text-xs text-[#B54708] font-medium">
-                    Pending Review
+                    {documentData.staffStatus || "Pending Review"}
                   </p>
                 </div>
               </div>
@@ -149,89 +177,106 @@ const ReimburseView = () => {
                   <div>
                     <p className="text-sm text-gray-600">Event Date</p>
                     <p className="font-medium">
-                      {documentData.eventDetails.eventDate}
+                      {formatDate(documentData.eventDetails.eventDate)}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Document ID</p>
-                    <p className="font-medium">
-                      {documentData.eventDetails.documentId}
-                    </p>
+                    <p className="font-medium">{documentData.documentId}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Bill Summary */}
-            <div className="mb-6 md:mb-8">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="overflow-x-auto">
-                  <div className="min-w-[600px]">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="text-sm text-gray-600">
-                          <th className="text-left py-2">Description</th>
-                          <th className="text-left py-2">Bill Date</th>
-                          <th className="text-right py-2">Amount</th>
-                          <th className="text-center py-2">Receipt</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {documentData.billSummary.map((bill) => (
-                          <tr
-                            key={bill.id}
-                            className="border-t border-gray-200"
+            <div className="mb-8">
+              <h3 className="text-lg font-medium mb-4">Bills Section</h3>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-gray-700 border-b  border-gray-300">
+                      <th className=" text-left py-3 px-4 font-semibold">
+                        Description
+                      </th>
+                      <th className=" py-3 px-4 font-semibold">Bill Date</th>
+                      <th className=" py-3 px-4 font-semibold">Amount</th>
+                      <th className=" text-right py-3 px-4 font-semibold">
+                        Receipt
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documentData.reimbursementItems.map((bill, index) => (
+                      <tr
+                        key={index}
+                        className="border-b border-gray-300 last:border-b-0"
+                      >
+                        <td className=" text-left py-3 px-4">
+                          {bill.bill.description}
+                        </td>
+                        <td className="text-center py-3 px-4">
+                          {formatDate(bill.bill.date)}
+                        </td>
+                        <td className="text-center py-3 px-4">
+                          ₹{bill.bill.amount.toFixed(2)}
+                        </td>
+                        <td className="flex justify-end py-3 px-4">
+                          <button
+                            onClick={() => handleViewReceipt(bill.bill.fileUrl)}
+                            className="flex justify-end items-center gap-1 text-black hover:cursor-pointer hover:underline"
                           >
-                            <td className="py-3">{bill.description}</td>
-                            <td className="py-3">{bill.billDate}</td>
-                            <td className="py-3 text-right">
-                              ₹{bill.amount.toFixed(2)}
-                            </td>
-                            <td className="py-3 text-center">
-                              <button
-                                onClick={() => handleViewReceipt(bill.receipt)}
-                                className="hover:cursor-pointer text-blue-600 hover:text-blue-800 text-sm"
-                              >
-                                View
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                        <tr className="border-t border-gray-200 font-medium">
-                          <td colSpan="2" className="py-3">
-                            Total Amount
-                          </td>
-                          <td className="py-3 text-right">
-                            ₹{documentData.totalAmount.toFixed(2)}
-                          </td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="#000000"
+                              className="pt-1"
+                              height="15px"
+                              width="15px"
+                              viewBox="0 0 455 455"
+                            >
+                              <path d="M0,0v455h455V0H0z M259.405,80c17.949,0,32.5,14.551,32.5,32.5s-14.551,32.5-32.5,32.5s-32.5-14.551-32.5-32.5  S241.456,80,259.405,80z M375,375H80v-65.556l83.142-87.725l96.263,68.792l69.233-40.271L375,299.158V375z" />
+                            </svg>
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="font-semibold">
+                      <td className="py-3 px-4" colSpan={2}>
+                        Total Amount
+                      </td>
+                      <td className="py-3 text-center">
+                        ₹{documentData.totalAmount.toFixed(2)}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
             {/* Approval Section */}
-            <div>
-              <h2 className="text-lg font-medium mb-4">Approval Section</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-[#38A37F] text-white rounded-lg p-4 flex items-center justify-between">
-                  <span>Financial Head</span>
-                  <FiCheck className="w-5 h-5" />
+            <div className="mb-4">
+              <h3 className="text-lg font-medium mb-4">Approval Section</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Financial Head */}
+                <div className="rounded-xl p-3 flex items-center gap-1 justify-center bg-gray-100 text-gray-700">
+                  <span className="font-semibold">Faculty</span>
+                  <span className="text-sm">(Pending)</span>
                 </div>
-                <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-between">
-                  <span className="text-gray-600">Faculty</span>
-                  <span className="text-sm text-gray-500">Pending</span>
+                {/* Faculty */}
+                <div className="rounded-xl p-3 flex items-center gap-1 justify-center bg-gray-100 text-gray-700">
+                  <span className="font-semibold">Vice Principal</span>
+                  <span className="text-sm">(Pending)</span>
                 </div>
-                <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-between">
-                  <span className="text-gray-600">VP</span>
-                  <span className="text-sm text-gray-500">Pending</span>
+                {/* VP */}
+                <div className="rounded-xl p-3 flex items-center gap-1 justify-center bg-gray-100 text-gray-700">
+                  <span className="font-semibold">Principal</span>
+                  <span className="text-sm">(Pending)</span>
                 </div>
-                <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-between">
-                  <span className="text-gray-600">Principal</span>
-                  <span className="text-sm text-gray-500">Pending</span>
+                {/* Principal */}
+                <div className="rounded-xl p-3 flex items-center gap-1 justify-center bg-gray-100 text-gray-700">
+                  <span className="font-semibold">Accountant</span>
+                  <span className="text-sm">(Pending)</span>
                 </div>
               </div>
             </div>
@@ -252,17 +297,19 @@ const ReimburseView = () => {
               <div>
                 <p className="text-sm text-gray-600">Status</p>
                 <p className="bg-[#FFF9E7] px-2 mt-1 py-1 inline-block rounded-full text-xs text-[#B54708] font-medium">
-                  {documentData.status}
+                  {documentData.staffStatus || "Pending Review"}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Generated On</p>
-                <p className="font-medium">{documentData.generatedOn}</p>
+                <p className="font-medium">
+                  {new Date(documentData.createdAt).toLocaleDateString()}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Bills</p>
                 <p className="font-medium">
-                  {documentData.billSummary.length} bills attached
+                  {documentData.reimbursementItems.length} bills attached
                 </p>
               </div>
             </div>
@@ -278,11 +325,11 @@ const ReimburseView = () => {
                 <div className="ml-3">
                   <p className="font-medium">Document Generated</p>
                   <p className="text-sm text-gray-500">
-                    {documentData.generatedOn}
+                    {new Date(documentData.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
-              {["Faculty Approval", "VP Approval", "Principal Approval"].map(
+              {["Faculty", "Vice Principal", "Principal", "Accountant"].map(
                 (step, index) => (
                   <div key={index} className="flex items-center">
                     <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
@@ -300,18 +347,8 @@ const ReimburseView = () => {
 
           <div className="mt-4 md:mt-6 space-y-3">
             <button
-              onClick={handleDownloadPDF}
-              className="hover:cursor-pointer w-full px-4 py-2 border border-gray-300 rounded-lg text-sm flex items-center justify-center gap-2"
-            >
-              <FiDownload />
-              Download PDF
-            </button>
-            <button
-              onClick={() => {
-                handleSubmitForApproval;
-                navigate("/reimburse/success");
-              }}
-              className="hover:cursor-pointer w-full px-4 py-2 bg-[#38A37F] text-white rounded-lg text-sm hover:bg-[#2c8164]"
+              onClick={handleSubmitForApproval}
+              className="hover:cursor-pointer w-full px-4 py-3 bg-[#38A37F] text-white font-medium rounded-lg text-sm hover:bg-[#2c8164]"
             >
               Submit for Approval
             </button>

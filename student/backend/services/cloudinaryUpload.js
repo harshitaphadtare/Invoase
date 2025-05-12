@@ -17,7 +17,7 @@ const uploadToCloudinary = async (file) => {
     const result = await cloudinary.uploader.upload(dataURI, {
       resource_type: 'auto',
       folder: 'documents',
-      allowed_formats: ['pdf', 'doc', 'docx'],
+      allowed_formats: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'],
     });
     
     return result.secure_url;

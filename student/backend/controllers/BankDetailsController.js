@@ -54,3 +54,19 @@ export const saveBankDetails = async (req, res) => {
         });
     }
 };
+
+export const getBankDetails = async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        if (!studentId) {
+            return res.status(400).json({ success: false, message: "Student ID is required" });
+        }
+        const details = await BankDetails.findOne({ studentId, isActive: true });
+        if (!details) {
+            return res.status(404).json({ success: false, message: "No bank details found" });
+        }
+        res.json({ success: true, data: details });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Failed to fetch bank details" });
+    }
+};

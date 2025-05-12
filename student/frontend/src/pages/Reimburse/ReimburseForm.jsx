@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FiUpload, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { reimbService } from "../../services/reimbServices";
+import { toast } from "react-toastify";
+import { bankDetailsService } from "../../services/bankDetailsService";
 
 const ReimburseForm = () => {
   const navigate = useNavigate();
@@ -13,7 +15,7 @@ const ReimburseForm = () => {
     eventDate: "",
     eventDescription: "",
     councilName: "",
-    accountHolder: "",
+    accountHolderName: "",
     bankName: "",
     accountNumber: "",
     ifscCode: "",
@@ -38,7 +40,7 @@ const ReimburseForm = () => {
       "eventDate",
       "eventDescription",
       "councilName",
-      "accountHolder",
+      "accountHolderName",
       "bankName",
       "accountNumber",
       "ifscCode",
@@ -60,6 +62,36 @@ const ReimburseForm = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    const fetchBankDetails = async () => {
+      try {
+        const studentId = localStorage.getItem("studentId");
+        if (!studentId) return;
+        const res = await bankDetailsService.getBankDetails(studentId);
+        if (res.success && res.data) {
+          setFormData((prev) => ({
+            ...prev,
+            accountHolderName: res.data.accountHolderName || "",
+            bankName: res.data.bankName || "",
+            accountNumber: res.data.accountNumber || "",
+            ifscCode: res.data.ifscCode || "",
+          }));
+        } else {
+          toast.info(
+            "No bank details found. Please fill in your payee details."
+          );
+        }
+      } catch (err) {
+        toast.error(
+          err?.response?.data?.message ||
+            err?.message ||
+            "Failed to fetch bank details. Please try again."
+        );
+      }
+    };
+    fetchBankDetails();
   }, []);
 
   // Validation rules
@@ -86,8 +118,8 @@ const ReimburseForm = () => {
     }
 
     // Payee Details validation
-    if (!formData.accountHolder.trim()) {
-      tempErrors.accountHolder = "Account holder name is required";
+    if (!formData.accountHolderName.trim()) {
+      tempErrors.accountHolderName = "Account holder name is required";
     }
     if (!formData.bankName.trim()) {
       tempErrors.bankName = "Bank name is required";
@@ -146,7 +178,12 @@ const ReimburseForm = () => {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      const allowedTypes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+      ];
       const maxSize = 5 * 1024 * 1024; // 5MB
 
       if (!allowedTypes.includes(file.type)) {
@@ -174,12 +211,66 @@ const ReimburseForm = () => {
     setBillItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const handleGenerateDocument = () => {
+  const handleGenerateDocument = async () => {
     setIsFormSubmitted(true);
     if (validateForm()) {
       if (formProgress === 100) {
-        console.log("Generating document...");
-        navigate("/reimburse/view");
+        try {
+          // Prepare the data for submission
+          const eventDetails = {
+            eventName: formData.eventName,
+            eventDate: formData.eventDate,
+            eventDescription: formData.eventDescription,
+            councilName: formData.councilName,
+          };
+
+          const bankDetails = {
+            accountHolderName: formData.accountHolderName,
+            bankName: formData.bankName,
+            accountNumber: formData.accountNumber,
+            ifscCode: formData.ifscCode,
+          };
+
+          const reimbursementItems = billItems.map((item) => ({
+            description: item.name,
+            date: item.date,
+            amount: item.amount,
+          }));
+          const bills = billItems.map((item) => item.file);
+
+          // Create the document
+          const response = await reimbService.createReimbDocument({
+            studentId: localStorage.getItem("studentId"),
+            eventDetails,
+            bankDetails,
+            reimbursementItems,
+            bills,
+          });
+
+          if (response.success) {
+            toast.success("Document created successfully!");
+            navigate("/reimburse/view", {
+              state: { documentId: response.data.documentId },
+            });
+          } else {
+            toast.error(response.message || "Failed to create document");
+            setErrors((prev) => ({
+              ...prev,
+              form: response.message || "Failed to create document",
+            }));
+          }
+        } catch (error) {
+          // Handle backend validation errors
+          let errorMsg = error?.message || "Failed to create document";
+          if (error?.errors && Array.isArray(error.errors)) {
+            errorMsg = error.errors.join(", ");
+          }
+          toast.error(errorMsg);
+          setErrors((prev) => ({
+            ...prev,
+            form: errorMsg,
+          }));
+        }
       } else {
         setErrors((prev) => ({
           ...prev,
@@ -204,16 +295,32 @@ const ReimburseForm = () => {
   const handleNewBillFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      const allowedTypes = [
+        "application/pdf",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+      ];
       const maxSize = 5 * 1024 * 1024; // 5MB
-      if (!allowedTypes.includes(file.type)) {
-        setBillFileErrors("Only PDF, JPG, and PNG files are allowed");
+
+      if (file.type.startsWith("video/")) {
+        setBillFileErrors("Video files are not allowed");
         return;
       }
+
+      if (
+        !allowedTypes.includes(file.type) &&
+        !file.type.startsWith("image/")
+      ) {
+        setBillFileErrors("Only image files and PDF are allowed");
+        return;
+      }
+
       if (file.size > maxSize) {
         setBillFileErrors("File size should be less than 5MB");
         return;
       }
+
       setNewBill((prev) => ({ ...prev, file }));
       setBillFileErrors("");
     }
@@ -288,7 +395,7 @@ const ReimburseForm = () => {
                     value={formData.eventName}
                     onChange={handleInputChange}
                     placeholder="Enter event name"
-                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:border-blue-500 
+                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500 
                     ${shouldShowError("eventName") ? "border-red-500" : ""}`}
                   />
                   {shouldShowError("eventName") && (
@@ -309,7 +416,7 @@ const ReimburseForm = () => {
                     name="eventDate"
                     value={formData.eventDate}
                     onChange={handleInputChange}
-                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:border-blue-500 
+                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500
                     ${shouldShowError("eventDate") ? "border-red-500" : ""}`}
                   />
                   {shouldShowError("eventDate") && (
@@ -331,7 +438,7 @@ const ReimburseForm = () => {
                   value={formData.eventDescription}
                   onChange={handleInputChange}
                   placeholder="Describe the event purpose, attendees etc."
-                  className={`w-full p-2 border rounded-md text-sm h-24 focus:outline-none focus:border-blue-500 
+                  className={`w-full p-2 border rounded-md text-sm h-24 focus:outline-none focus:ring-1 focus:ring-gray-500 
                   ${
                     shouldShowError("eventDescription") ? "border-red-500" : ""
                   }`}
@@ -355,7 +462,7 @@ const ReimburseForm = () => {
                   value={formData.councilName}
                   onChange={handleInputChange}
                   placeholder="Technology Council"
-                  className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:border-blue-500 
+                  className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500 
                   ${shouldShowError("councilName") ? "border-red-500" : ""}`}
                 />
                 {shouldShowError("councilName") && (
@@ -446,15 +553,15 @@ const ReimburseForm = () => {
                 <div className="flex flex-row gap-3 mb-3">
                   <div className="flex-1 min-w-[150px]">
                     <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Vendor Name
+                      Description
                     </label>
                     <input
                       type="text"
                       name="name"
                       value={newBill.name}
                       onChange={handleNewBillChange}
-                      placeholder="Enter vendor name"
-                      className="w-full p-2 border rounded text-sm focus:outline-none focus:border-blue-500"
+                      placeholder="Enter description"
+                      className="w-full p-2 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
                     />
                   </div>
                   <div className="flex-1 min-w-[140px]">
@@ -466,7 +573,7 @@ const ReimburseForm = () => {
                       name="date"
                       value={newBill.date}
                       onChange={handleNewBillChange}
-                      className="w-full p-2 border rounded text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full p-2 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
                     />
                   </div>
                   <div className="flex-1 min-w-[120px]">
@@ -483,7 +590,7 @@ const ReimburseForm = () => {
                         value={newBill.amount}
                         onChange={handleNewBillChange}
                         placeholder="Enter amount"
-                        className="w-full p-2 pl-6 border rounded text-sm focus:outline-none focus:border-blue-500"
+                        className="w-full p-2 pl-6 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
                         min="0"
                         step="0.01"
                       />
@@ -503,7 +610,7 @@ const ReimburseForm = () => {
                       type="file"
                       onChange={handleNewBillFileChange}
                       className="hidden"
-                      accept=".pdf,.jpg,.png"
+                      accept="image/*,application/pdf"
                     />
                   </label>
                   <button
@@ -587,24 +694,26 @@ const ReimburseForm = () => {
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">
                     Account Holder Name{" "}
-                    {shouldShowError("accountHolder") && (
+                    {shouldShowError("accountHolderName") && (
                       <span className="text-red-500">*</span>
                     )}
                   </label>
                   <input
                     type="text"
-                    name="accountHolder"
-                    value={formData.accountHolder}
+                    name="accountHolderName"
+                    value={formData.accountHolderName}
                     onChange={handleInputChange}
                     placeholder="John Smith"
-                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:border-blue-500 
+                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500 
                     ${
-                      shouldShowError("accountHolder") ? "border-red-500" : ""
+                      shouldShowError("accountHolderName")
+                        ? "border-red-500"
+                        : ""
                     }`}
                   />
-                  {shouldShowError("accountHolder") && (
+                  {shouldShowError("accountHolderName") && (
                     <p className="text-red-500 text-xs mt-1">
-                      {errors.accountHolder}
+                      {errors.accountHolderName}
                     </p>
                   )}
                 </div>
@@ -621,7 +730,7 @@ const ReimburseForm = () => {
                     value={formData.bankName}
                     onChange={handleInputChange}
                     placeholder="Enter bank name"
-                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:border-blue-500 
+                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500 
                     ${shouldShowError("bankName") ? "border-red-500" : ""}`}
                   />
                   {shouldShowError("bankName") && (
@@ -643,7 +752,7 @@ const ReimburseForm = () => {
                     value={formData.accountNumber}
                     onChange={handleInputChange}
                     placeholder="XXXXXXXXXX"
-                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:border-blue-500 
+                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500
                     ${
                       shouldShowError("accountNumber") ? "border-red-500" : ""
                     }`}
@@ -669,7 +778,7 @@ const ReimburseForm = () => {
                     placeholder="SBIN0123456"
                     maxLength={11}
                     style={{ textTransform: "uppercase" }}
-                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:border-blue-500 
+                    className={`w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-gray-500
                     ${shouldShowError("ifscCode") ? "border-red-500" : ""}`}
                   />
                   {shouldShowError("ifscCode") && (
@@ -683,7 +792,7 @@ const ReimburseForm = () => {
 
             {/* Generate Document Button */}
             <div className="flex flex-col">
-              {isFormSubmitted && errors.form && (
+              {errors.form && (
                 <p className="text-red-500 text-xs mb-2">{errors.form}</p>
               )}
               <div className="flex justify-end">
