@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FiArrowLeft, FiSend, FiFileText } from "react-icons/fi";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { donationService } from "../../services/donationService";
+import { toast } from "react-toastify";
 
 const DonationView = () => {
   const [documentData, setDocumentData] = useState(null);
@@ -51,15 +52,62 @@ const DonationView = () => {
   }, []);
 
   // Send Document: actually create the document in the backend
-  const handleSendDocument = () => {
-    toast.success("Document sent successfully!");
-    navigate("/sponsor/donation-form/success", {
-      state: {
-        type: "donation",
-        documentId: documentData.documentId,
-        submissionDate: documentData.createdAt || new Date(),
-      },
-    });
+  const handleSendDocument = async () => {
+    setSubmitting(true);
+    try {
+      // 1. Get form data and file from navigation state or localStorage
+      let file = location.state?.uploadedFile;
+      let formData = documentData;
+
+      // If file is not present in navigation state, try to get from localStorage
+      if (!file) {
+        const saved = localStorage.getItem("pendingDonationForm");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          file = parsed.uploadedFile;
+          if (file && file.name && !(file instanceof File)) {
+            toast.error("Please re-upload the document before sending.");
+            setSubmitting(false);
+            return;
+          }
+        }
+      }
+
+      // 2. Get studentId from localStorage
+      const studentId = localStorage.getItem("studentId");
+      if (!studentId) {
+        toast.error("User not found. Please log in again.");
+        setSubmitting(false);
+        return;
+      }
+
+      // 3. Prepare data for API
+      const donationData = {
+        ...formData,
+        file,
+        studentId,
+      };
+
+      // 4. Call backend
+      const response = await donationService.createDonation(donationData);
+
+      // 5. On success, show toast and navigate
+      toast.success("Document created successfully!");
+      navigate("/sponsor/donation-form/success", {
+        state: {
+          type: "donation",
+          documentId: response.documentId,
+          submissionDate: response.createdAt || new Date(),
+        },
+      });
+
+      // 6. Clean up localStorage
+      localStorage.removeItem("pendingDonationForm");
+    } catch (err) {
+      toast.error(err.message || "Failed to create document");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const file = location.state?.uploadedFile;

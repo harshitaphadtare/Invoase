@@ -240,14 +240,6 @@ const SponsorForm = () => {
             uploadedFile: uploadedFile ? { name: uploadedFile.name } : null,
           };
           localStorage.setItem("pendingDonationForm", JSON.stringify(saveObj));
-          toast.success("Document created successfully!", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          });
           navigate("/sponsor/donation-form/view", {
             state: {
               formData,
