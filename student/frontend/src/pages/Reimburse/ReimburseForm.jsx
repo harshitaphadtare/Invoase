@@ -19,15 +19,16 @@ const ReimburseForm = () => {
     ifscCode: "",
   });
 
-  const [billItems, setBillItems] = useState([
-    {
-      id: 1,
-      name: "Office Supplies Co",
-      date: "2024-02-19",
-      amount: 4143.85,
-      billNumber: "BN-2024/01",
-    },
-  ]);
+  const [billItems, setBillItems] = useState([]);
+
+  const [addingBill, setAddingBill] = useState(false);
+  const [newBill, setNewBill] = useState({
+    name: "",
+    date: "",
+    amount: "",
+    file: null,
+  });
+  const [billFileErrors, setBillFileErrors] = useState("");
 
   // Calculate form progress
   useEffect(() => {
@@ -195,6 +196,57 @@ const ReimburseForm = () => {
     return isFormSubmitted && errors[fieldName];
   };
 
+  const handleNewBillChange = (e) => {
+    const { name, value } = e.target;
+    setNewBill((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleNewBillFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (!allowedTypes.includes(file.type)) {
+        setBillFileErrors("Only PDF, JPG, and PNG files are allowed");
+        return;
+      }
+      if (file.size > maxSize) {
+        setBillFileErrors("File size should be less than 5MB");
+        return;
+      }
+      setNewBill((prev) => ({ ...prev, file }));
+      setBillFileErrors("");
+    }
+  };
+
+  const handleAddBill = () => {
+    // Validate all fields
+    if (!newBill.name || !newBill.date || !newBill.amount || !newBill.file) {
+      setBillFileErrors("Please fill all bill details and upload a file");
+      return;
+    }
+    setBillItems((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        name: newBill.name,
+        date: newBill.date,
+        amount: parseFloat(newBill.amount),
+        file: newBill.file,
+      },
+    ]);
+    setNewBill({ name: "", date: "", amount: "", file: null });
+    setAddingBill(false);
+    setBillFileErrors("");
+  };
+
+  const handleViewBillFile = (file) => {
+    if (file instanceof File) {
+      const url = URL.createObjectURL(file);
+      window.open(url, "_blank");
+    }
+  };
+
   return (
     <div className="bg-[#F5F5F5] min-h-screen">
       <div className="max-w-[90%] md:max-w-[80%] lg:max-w-3xl mx-auto p-4 md:p-6">
@@ -314,85 +366,219 @@ const ReimburseForm = () => {
               </div>
             </div>
 
-            {/* Bill Upload Section */}
-            <div className="mb-4 md:mb-6">
-              <h2 className="text-sm font-medium mb-4">
-                Bill Upload{" "}
-                {shouldShowError("file") && (
-                  <span className="text-red-500">*</span>
-                )}
-              </h2>
-              <div className="flex flex-col sm:flex-row gap-2 mb-4">
-                <button className="bg-[#2C3E50] text-white hover:cursor-pointer hover:bg-gray-800 px-4 py-2 rounded-md text-xs flex items-center justify-center gap-2">
-                  <FiUpload className="w-4 h-4" />
-                  Take Photo
-                </button>
-                <label className="bg-white border border-gray-300 px-4 py-2 rounded text-xs text-gray-600 cursor-pointer hover:bg-gray-50 flex items-center justify-center">
-                  Upload File
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept=".pdf,.jpg,.png"
-                  />
-                </label>
+            {/* Uploaded Bills Table */}
+            <div className="mb-4 md:mb-6 bg-gray-50 rounded-lg p-4">
+              <h3 className="text-lg font-semibold mb-4">Uploaded Bills</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-separate border-spacing-y-1">
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-700">
+                      <th className="text-left py-2 px-3 font-medium">
+                        Vendor Name
+                      </th>
+                      <th className="text-left py-2 px-3 font-medium">Date</th>
+                      <th className="text-right py-2 px-3 font-medium">
+                        Amount
+                      </th>
+                      <th className="text-center py-2 px-3 font-medium">
+                        Bill File
+                      </th>
+                      <th className="text-center py-2 px-3 font-medium">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {billItems.map((item) => (
+                      <tr key={item.id} className="bg-white rounded">
+                        <td className="py-2 px-3">{item.name}</td>
+                        <td className="py-2 px-3">{item.date}</td>
+                        <td className="py-2 px-3 text-right">
+                          ₹{item.amount.toFixed(2)}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          {item.file ? (
+                            <button
+                              onClick={() => handleViewBillFile(item.file)}
+                              className="text-blue-600 hover:underline hover:cursor-pointer text-sm font-medium"
+                            >
+                              {item.file.name || "View"}
+                            </button>
+                          ) : (
+                            <span className="text-gray-400 text-xs">
+                              No file
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <button
+                            onClick={() => handleDeleteBillItem(item.id)}
+                            className="text-red-500 hover:cursor-pointer hover:text-red-700"
+                            title="Delete Bill"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-5 h-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <p className="text-xs text-gray-500">
-                Supported formats: PDF, JPG, PNG
-              </p>
-              {shouldShowError("file") && (
-                <p className="text-red-500 text-xs mt-1">{errors.file}</p>
-              )}
             </div>
 
-            {/* Bill Items Table */}
-            {billItems.length > 0 && (
-              <div className="mb-4 md:mb-6 bg-gray-50 rounded-lg p-4">
-                <h3 className="text-sm font-medium mb-2">Uploaded Bills</h3>
-                <div className="overflow-x-auto">
-                  <div className="min-w-[600px]">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="text-gray-600">
-                          <th className="text-left py-2">Vendor Name</th>
-                          <th className="text-left py-2">Date</th>
-                          <th className="text-right py-2">Amount</th>
-                          <th className="text-center py-2">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {billItems.map((item) => (
-                          <tr key={item.id}>
-                            <td className="py-2">{item.name}</td>
-                            <td className="py-2">{item.date}</td>
-                            <td className="py-2 text-right">
-                              ₹{item.amount.toFixed(2)}
-                            </td>
-                            <td className="py-2 text-center">
-                              <button
-                                onClick={() => handleDeleteBillItem(item.id)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <FiX className="w-4 h-4" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                        <tr className="border-t">
-                          <td colSpan="2" className="py-2 font-medium">
-                            Total Amount
-                          </td>
-                          <td className="py-2 text-right font-medium">
-                            ₹{totalAmount.toFixed(2)}
-                          </td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
+            {/* Add New Bill Card (inputs row, then buttons row) */}
+            {addingBill && (
+              <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                <h4 className="text-base font-semibold mb-3">Add New Bill</h4>
+                <div className="flex flex-row gap-3 mb-3">
+                  <div className="flex-1 min-w-[150px]">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Vendor Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={newBill.name}
+                      onChange={handleNewBillChange}
+                      placeholder="Enter vendor name"
+                      className="w-full p-2 border rounded text-sm focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[140px]">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      name="date"
+                      value={newBill.date}
+                      onChange={handleNewBillChange}
+                      className="w-full p-2 border rounded text-sm focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Amount
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-base">
+                        ₹
+                      </span>
+                      <input
+                        type="number"
+                        name="amount"
+                        value={newBill.amount}
+                        onChange={handleNewBillChange}
+                        placeholder="Enter amount"
+                        className="w-full p-2 pl-6 border rounded text-sm focus:outline-none focus:border-blue-500"
+                        min="0"
+                        step="0.01"
+                      />
+                    </div>
                   </div>
                 </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    className="bg-[#2C3E50] text-white py-2 px-3 hover:cursor-pointer rounded text-xs flex items-center gap-2 hover:bg-gray-800 whitespace-nowrap"
+                    // onClick for take photo can be implemented if needed
+                  >
+                    Take Photo
+                  </button>
+                  <label className="bg-white border border-gray-300 py-2 px-3 hover:cursor-pointer rounded text-xs text-gray-600 cursor-pointer hover:bg-gray-50 flex items-center gap-2 whitespace-nowrap">
+                    Upload File
+                    <input
+                      type="file"
+                      onChange={handleNewBillFileChange}
+                      className="hidden"
+                      accept=".pdf,.jpg,.png"
+                    />
+                  </label>
+                  <button
+                    onClick={() => {
+                      setAddingBill(false);
+                      setNewBill({
+                        name: "",
+                        date: "",
+                        amount: "",
+                        file: null,
+                      });
+                      setBillFileErrors("");
+                    }}
+                    className="bg-gray-200 text-gray-700 py-2 px-3 rounded text-xs hover:cursor-pointer hover:bg-gray-300 whitespace-nowrap"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddBill}
+                    className="bg-green-600 text-white py-2 px-3 rounded text-xs hover:cursor-pointer flex items-center gap-2 hover:bg-green-700 whitespace-nowrap"
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                    Add Bill
+                  </button>
+                </div>
+                {billFileErrors && (
+                  <p className="text-red-500 text-xs mt-2">{billFileErrors}</p>
+                )}
               </div>
             )}
+
+            {/* Add Bill Button (if not adding) */}
+            {!addingBill && (
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => setAddingBill(true)}
+                  className="bg-[#2C3E50] text-white px-3 py-2 rounded hover:cursor-pointer text-xs flex items-center gap-2 hover:bg-gray-800 shadow"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  Add Bill
+                </button>
+              </div>
+            )}
+
+            {/* Total Row */}
+            <div className="flex justify-end items-center border-t pt-4 mt-6">
+              <span className="text-lg  mr-2">Total Amount: </span>
+              <span className="text-lg font-bold">
+                ₹{totalAmount.toFixed(2)}
+              </span>
+            </div>
 
             {/* Payee Details Section */}
             <div className="mb-4 md:mb-6">
