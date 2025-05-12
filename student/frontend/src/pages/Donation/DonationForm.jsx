@@ -292,10 +292,6 @@ const SponsorForm = () => {
   return (
     <div className="min-h-screen bg-[#F6F6F6]">
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <h1 className="text-2xl font-semibold mb-3">
-          {documentId ? "Edit Donation Form" : "Fill the Donation Form"}
-        </h1>
-
         {/* Show comments section only in edit mode */}
         {documentId && <CommentSection comments={comments} />}
 

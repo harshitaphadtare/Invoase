@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  FiCheckCircle,
-  FiClock,
-  FiArrowLeft,
-  FiSend,
-  FiFileText,
-} from "react-icons/fi";
+import { FiArrowLeft, FiSend, FiFileText } from "react-icons/fi";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { donationService } from "../../services/donationService";
 
@@ -57,32 +51,15 @@ const DonationView = () => {
   }, []);
 
   // Send Document: actually create the document in the backend
-  const handleSendDocument = async () => {
-    setSubmitting(true);
-    try {
-      const studentId = localStorage.getItem("studentId");
-      if (!studentId)
-        throw new Error("Student ID not found. Please login again.");
-      // Get file from navigation state or localStorage (not storable in localStorage, so must be in state)
-      const file = location.state?.uploadedFile;
-      if (!file) throw new Error("File not found. Please re-upload.");
-      const submitData = {
-        studentId,
-        file,
-        ...documentData,
-      };
-      const response = await donationService.createDonation(submitData);
-      // Clear saved form data
-      localStorage.removeItem("pendingDonationForm");
-      // Navigate to success page
-      navigate("/sponsor/donation-form/success", {
-        state: { formData: response.data },
-      });
-    } catch (err) {
-      setError(err.message || "Failed to submit document");
-    } finally {
-      setSubmitting(false);
-    }
+  const handleSendDocument = () => {
+    toast.success("Document sent successfully!");
+    navigate("/sponsor/donation-form/success", {
+      state: {
+        type: "donation",
+        documentId: documentData.documentId,
+        submissionDate: documentData.createdAt || new Date(),
+      },
+    });
   };
 
   const file = location.state?.uploadedFile;

@@ -4,7 +4,7 @@ import { FiFileText, FiBell, FiMail } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 
-const DonationSuccess = () => {
+const DocSubmissionSuccess = () => {
   useEffect(() => {
     const successSound = new Audio(`${assets.success_sound}`);
     successSound
@@ -14,12 +14,17 @@ const DonationSuccess = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const isGstForm = location.pathname.includes("gst-form");
 
-  // Get submission details from location state with fallback values
+  // Get type, documentId, and submissionDate from state or fallback
+  const type =
+    location.state?.type ||
+    (location.pathname.includes("gst") ? "gst" : "donation");
   const submissionDate = location.state?.submissionDate || new Date();
   const documentId =
-    location.state?.documentId || "DOC-" + format(new Date(), "yyyyMMddHHmm");
+    location.state?.documentId ||
+    (type === "gst"
+      ? "GST-" + format(new Date(), "yyyyMMddHHmm")
+      : "DON-" + format(new Date(), "yyyyMMddHHmm"));
 
   // Format date to match the dashboard format
   const formatDate = (date) => {
@@ -50,7 +55,7 @@ const DonationSuccess = () => {
           />
         </div>
         <h2 className="text-center text-base sm:text-lg font-semibold mb-3 sm:mb-4">
-          {isGstForm ? "GST Document" : "Donation Document"} Successfully
+          {type === "gst" ? "GST Document" : "Donation Document"} Successfully
           Submitted
         </h2>
 
@@ -168,4 +173,4 @@ const DonationSuccess = () => {
   );
 };
 
-export default DonationSuccess;
+export default DocSubmissionSuccess;

@@ -150,6 +150,7 @@ export const deleteDocument = async (req, res) => {
     }
 };
 
+// Update donation document
 export const updateDonation = async (req, res) => {
     try {
         const { documentId } = req.params;
