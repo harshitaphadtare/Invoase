@@ -35,6 +35,10 @@ export const donationService = {
                 amount: donationData.amount
             }));
 
+            if (donationData.rejectionRemarks) {
+                formData.append('rejectionRemarks', donationData.rejectionRemarks);
+            }
+
             const response = await axios.post(
                 `${API_URL}/documents/create`, 
                 formData,

@@ -4,7 +4,7 @@ import { uploadToCloudinary } from '../services/cloudinaryUpload.js';
 // Create a new document
 export const createDocument = async (req, res) => {
     try {
-        const { studentId, donationDetails } = req.body;
+        const { studentId, donationDetails, rejectionRemarks } = req.body;
         let eventName, companyName, contactNumber, panCard, bankName, amount;
 
         if (typeof donationDetails === 'string') {
@@ -55,7 +55,8 @@ export const createDocument = async (req, res) => {
             },
             documentUrl,
             staffType: 'accountant',
-            staffStatus: 'pending'
+            staffStatus: 'pending',
+            rejectionRemarks: rejectionRemarks || ''
         });
 
         await document.save();
@@ -154,7 +155,7 @@ export const deleteDocument = async (req, res) => {
 export const updateDonation = async (req, res) => {
     try {
         const { documentId } = req.params;
-        const { donationDetails } = req.body;
+        const { donationDetails, rejectionRemarks } = req.body;
         let updateFields = {};
 
         if (donationDetails) {
@@ -173,6 +174,10 @@ export const updateDonation = async (req, res) => {
 
         // Optionally, reset status to pending on edit
         updateFields['staffStatus'] = 'pending';
+
+        if (typeof rejectionRemarks === 'string') {
+            updateFields['rejectionRemarks'] = rejectionRemarks;
+        }
 
         const updated = await Document.findOneAndUpdate(
             { documentId },

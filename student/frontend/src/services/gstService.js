@@ -37,6 +37,10 @@ export const gstService = {
                 amount: gstData.amount
             }));
 
+            if (gstData.rejectionRemarks) {
+                formData.append('rejectionRemarks', gstData.rejectionRemarks);
+            }
+
             const response = await axios.post(
                 `${API_URL}/gst/create`, 
                 formData,

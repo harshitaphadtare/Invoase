@@ -4,7 +4,7 @@ import { uploadToCloudinary } from '../services/cloudinaryUpload.js';
 // Create a new GST document
 export const createGstDocument = async (req, res) => {
     try {
-        const { studentId, gstDetails } = req.body;
+        const { studentId, gstDetails, rejectionRemarks } = req.body;
         let eventName, companyName, contactNumber, panCard, gstNumber, billingAddress, bankName, amount;
 
         if (typeof gstDetails === 'string') {
@@ -61,7 +61,8 @@ export const createGstDocument = async (req, res) => {
             },
             documentUrl,
             staffType: 'accountant',
-            staffStatus: 'pending'
+            staffStatus: 'pending',
+            rejectionRemarks: rejectionRemarks || ''
         });
 
         await gstDocument.save();
@@ -172,7 +173,7 @@ export const deleteGstDocument = async (req, res) => {
 export const updateGstDocument = async (req, res) => {
     try {
         const { documentId } = req.params;
-        const { gstDetails } = req.body;
+        const { gstDetails, rejectionRemarks } = req.body;
         let updateFields = {};
 
         if (gstDetails) {
@@ -192,6 +193,10 @@ export const updateGstDocument = async (req, res) => {
 
         // Reset status to pending on edit
         updateFields['staffStatus'] = 'pending';
+
+        if (typeof rejectionRemarks === 'string') {
+            updateFields['rejectionRemarks'] = rejectionRemarks;
+        }
 
         const updated = await GstDocuments.findOneAndUpdate(
             { documentId },
