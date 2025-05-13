@@ -9,6 +9,7 @@ import bankDetailsRoutes from "./routes/bankDetailsRoutes.js";
 import documentRoutes from "./routes/documentRoute.js";
 import gstRoutes from "./routes/gstRoute.js";  
 import reimbRoutes from "./routes/reimbRoute.js";
+import allDocRoute from './routes/allDocRoute.js'
 // Initialize Express app
 const app = express();
 const port = process.env.PORT || 5000;
@@ -32,6 +33,7 @@ app.use("/api/bank-details", bankDetailsRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/gst', gstRoutes);
 app.use('/api/reimb', reimbRoutes);
+app.use("/api/alldocuments", allDocRoute);
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { assets, initialNotifications } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { FiEye, FiEdit, FiArrowUp } from "react-icons/fi";
-import { donationService } from "../services/donationService";
 import { format } from "date-fns";
+import { allDocService } from "../services/allDocService";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -12,7 +12,6 @@ const Dashboard = () => {
   const [filter, setFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all-status");
   const [searchQuery, setSearchQuery] = useState("");
-  const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -47,9 +46,15 @@ const Dashboard = () => {
     },
   ];
 
+  // All documents state
+  const [allDocs, setAllDocs] = useState({
+    donationDocuments: [],
+    gstDocuments: [],
+    reimbursementDocuments: [],
+  });
+
   useEffect(() => {
     window.scrollTo(0, 0);
-
     const handleScroll = () => {
       if (window.scrollY > window.innerHeight * 0.5) {
         setShowScrollButton(true);
@@ -57,7 +62,6 @@ const Dashboard = () => {
         setShowScrollButton(false);
       }
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -67,13 +71,11 @@ const Dashboard = () => {
   };
 
   //notification section
-
   const markAsRead = (id) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     );
   };
-
   const handleDismiss = (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
@@ -129,56 +131,92 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    fetchDocuments();
+    const fetchAllDocs = async () => {
+      try {
+        setLoading(true);
+        const studentId = localStorage.getItem("studentId");
+        if (!studentId) throw new Error("Student ID not found");
+        const res = await allDocService.getAllDocumentsForStudent(studentId);
+        if (res && res.success && res.data) {
+          setAllDocs({
+            donationDocuments: res.data.donationDocuments || [],
+            gstDocuments: res.data.gstDocuments || [],
+            reimbursementDocuments: res.data.reimbursementDocuments || [],
+          });
+        } else {
+          throw new Error(res?.message || "Failed to fetch all documents");
+        }
+        setError(null);
+      } catch (err) {
+        setError(err.message || "Failed to fetch all documents");
+        setAllDocs({
+          donationDocuments: [],
+          gstDocuments: [],
+          reimbursementDocuments: [],
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAllDocs();
   }, []);
 
-  const fetchDocuments = async () => {
-    try {
-      setLoading(true);
-      const studentId = localStorage.getItem("studentId");
-      if (!studentId) {
-        throw new Error("Student ID not found");
-      }
+  // Combine all documents into one array for the table
+  const combinedDocuments = [
+    ...(allDocs.donationDocuments || []).map((doc) => ({
+      ...doc,
+      _type: "Donation",
+    })),
+    ...(allDocs.gstDocuments || []).map((doc) => ({
+      ...doc,
+      _type: "GST Invoice",
+    })),
+    ...(allDocs.reimbursementDocuments || []).map((doc) => ({
+      ...doc,
+      _type: "Reimbursement",
+    })),
+  ];
 
-      const token = localStorage.getItem("studentToken");
-      const response = await donationService.getStudentDonations(studentId, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setDocuments(response.data);
-      setError(null);
-    } catch (err) {
-      setError(err.message || "Failed to fetch documents");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  //documents section
-  const filteredDocuments = documents.filter((doc) => {
+  // Filter and sort
+  const filteredDocuments = combinedDocuments.filter((doc) => {
     const matchesSearch =
       searchQuery.trim() === "" ||
-      doc.documentId.toLowerCase().includes(searchQuery.toLowerCase());
-
+      (doc.documentId &&
+        doc.documentId.toLowerCase().includes(searchQuery.toLowerCase()));
     const statusMatches =
       statusFilter === "all-status" ||
-      doc.staffStatus.toLowerCase() === statusFilter.toLowerCase();
-
+      (doc.staffStatus &&
+        doc.staffStatus.toLowerCase() === statusFilter.toLowerCase());
     return matchesSearch && statusMatches;
   });
+  const sortedDocuments = [...filteredDocuments].sort((a, b) => {
+    return new Date(b.updatedAt) - new Date(a.updatedAt);
+  });
 
-  // Helper to get document type
-  const getDocumentType = (doc) => {
-    // If you add GST or Reimbursement docs, update this logic
-    if (doc.donationDetails) return "Donation";
-    if (doc.gstDetails) return "GST Invoice";
-    if (doc.reimbursementDetails) return "Reimbursement";
-    return "Unknown";
+  // Helper to get event name, company, council for each doc type
+  const getEventName = (doc) => {
+    if (doc.donationDetails?.eventName) return doc.donationDetails.eventName;
+    if (doc.gstDetails?.eventName) return doc.gstDetails.eventName;
+    if (doc.eventDetails?.eventName) return doc.eventDetails.eventName;
+    return "-";
+  };
+  const getCompany = (doc) => {
+    if (doc.donationDetails?.companyName)
+      return doc.donationDetails.companyName;
+    if (doc.gstDetails?.companyName) return doc.gstDetails.companyName;
+    if (doc.eventDetails?.councilName)
+      return doc.eventDetails.councilName + " reimb";
+    return "-";
+  };
+  const getAmount = (doc) => {
+    if (doc.donationDetails?.amount) return doc.donationDetails.amount;
+    if (doc.gstDetails?.amount) return doc.gstDetails.amount;
+    if (doc.totalAmount) return doc.totalAmount;
+    return "-";
   };
 
   const getStatusBadgeClasses = (status) => {
-    switch (status.toLowerCase()) {
+    switch ((status || "").toLowerCase()) {
       case "pending":
         return "bg-[#FEF9C3] text-[#854D0E] px-2 py-[2px] rounded-full text-xs font-medium";
       case "approved":
@@ -190,11 +228,10 @@ const Dashboard = () => {
     }
   };
 
-  // Format date to "Jan 15, 2024 2:30pm" format
   const formatDate = (dateString) => {
+    if (!dateString) return "-";
     const date = new Date(dateString);
     const formatted = format(date, "MMM d, yyyy h:mma");
-    // Split into parts to handle capitalization correctly
     const [month, ...rest] = formatted.split(" ");
     return [
       month.charAt(0).toUpperCase() + month.slice(1).toLowerCase(),
@@ -204,17 +241,6 @@ const Dashboard = () => {
       .toLowerCase()
       .replace(/^[a-z]/, (c) => c.toUpperCase());
   };
-
-  // Sort documents by updatedAt in descending order (most recent first)
-  const sortedDocuments = [...filteredDocuments].sort((a, b) => {
-    return new Date(b.updatedAt) - new Date(a.updatedAt);
-  });
-
-  // const handleLogout = () => {
-  //   localStorage.removeItem("studentId");
-  //   localStorage.removeItem("studentToken");
-  //   navigate("/student/login");
-  // };
 
   return (
     <div className="h-auto bg-[#F6F6F6] px-4 sm:p-10">
@@ -490,26 +516,16 @@ const Dashboard = () => {
                       {doc.documentId}
                     </td>
                     <td className="py-4 px-6 text-black-800 whitespace-nowrap">
-                      {doc.donationDetails?.eventName ||
-                        doc.gstDetails?.invoiceName ||
-                        doc.reimbursementDetails?.purpose ||
-                        "-"}
+                      {getEventName(doc)}
                     </td>
                     <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
-                      {doc.donationDetails?.companyName ||
-                        doc.gstDetails?.companyName ||
-                        doc.reimbursementDetails?.companyName ||
-                        "-"}
+                      {getCompany(doc)}
                     </td>
                     <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
-                      ₹
-                      {doc.donationDetails?.amount ||
-                        doc.gstDetails?.amount ||
-                        doc.reimbursementDetails?.amount ||
-                        "-"}
+                      ₹{getAmount(doc)}
                     </td>
                     <td className="py-4 px-6 text-gray-500 whitespace-nowrap">
-                      {getDocumentType(doc)}
+                      {doc._type}
                     </td>
                     <td className="py-4 px-6 text-gray-500 whitespace-nowrap capitalize">
                       {doc.staffType}
@@ -523,7 +539,8 @@ const Dashboard = () => {
                       {formatDate(doc.updatedAt)}
                     </td>
                     <td className="py-4 px-6 whitespace-nowrap">
-                      {doc.staffStatus.toLowerCase() === "rejected" ? (
+                      {doc.staffStatus &&
+                      doc.staffStatus.toLowerCase() === "rejected" ? (
                         <button
                           onClick={() =>
                             navigate(
